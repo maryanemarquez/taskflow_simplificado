@@ -1,0 +1,62 @@
+# Segredos e configuração local
+.env
+.env.*
+!.env.example
+*.local.yml
+
+# IDEs
+.idea/
+.vscode/
+*.iml
+.classpath
+.project
+.settings/
+.factorypath
+.apt_generated/
+.sts4-cache/
+
+# Sistema operacional
+.DS_Store
+Thumbs.db
+
+# Dependências e artefatos de build comuns
+node_modules/
+target/
+build/
+dist/
+coverage/
+.expo/
+web-build/
+*.class
+
+# Backend (Java / Maven / Spring)
+backend/logs/
+HELP.md
+backend/.mvn/wrapper/maven-wrapper.jar
+hs_err_pid*
+
+# Frontend (Expo / React Native / Node)
+npm-debug.log*
+yarn-error.log*
+*.tsbuildinfo
+.metro-health-check*
+expo-env.d.ts
+
+# Chaves e certificados (nunca versionar)
+*.key
+*.pem
+*.p8
+*.p12
+*.jks
+*.mobileprovision
+
+# Logs, relatórios de teste e temporários
+*.log
+backend/target/site/
+frontend/coverage/
+*.tmp
+*.bak
+*.swp
+
+# Configuração local de ferramentas de IA
+.claude/settings.local.json
