@@ -19,6 +19,7 @@ export const MESSAGES = {
   common: {
     loading: 'Carregando…',
     retry: 'Tentar novamente',
+    sending: 'Enviando…',
     save: 'Salvar',
     cancel: 'Cancelar',
     logout: 'Sair',
@@ -39,7 +40,6 @@ export const MESSAGES = {
     title: 'Crie sua conta',
     subtitle: 'Informe seus dados para começar.',
     submit: 'Criar minha conta',
-    loading: 'Enviando…',
     name: 'Nome',
     email: 'E-mail',
     password: 'Senha',

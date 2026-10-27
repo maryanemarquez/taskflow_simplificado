@@ -6,8 +6,8 @@ import { MESSAGES } from '../../../core/messages/messages';
 import { session } from '../../../core/session/session';
 import { authApi } from '../api/authApi';
 import type { LoginPayload } from './authTypes';
+import { ROUTES } from '../../../core/routes';
 
-const HOME_ROUTE = '/';
 
 export function useLogin() {
   const [form, setForm] = useState<LoginPayload>({ email: '', senha: '' });
@@ -17,7 +17,7 @@ export function useLogin() {
     onSuccess: (response) => {
       queryClient.clear();
       session.setToken(response.accessToken);
-      router.replace(HOME_ROUTE);
+      router.replace(ROUTES.home);
     },
   });
 

@@ -1,5 +1,5 @@
 import { StyleSheet, Text, View } from 'react-native';
-import { theme } from '../../../core/theme/theme';
+import { theme } from '../theme/theme';
 
 interface ErrorNoticeProps {
   message: string;

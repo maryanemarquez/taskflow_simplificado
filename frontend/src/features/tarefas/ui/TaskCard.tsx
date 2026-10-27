@@ -6,7 +6,8 @@ import { Icon, type IconName } from '../../../core/ui/Icon';
 import type { CurrentUser } from '../../auth/model/authTypes';
 import type { Task, TaskStatus } from '../api/tarefasApi';
 import { isoToBr } from '../model/dateFormat';
-import { canManage, isOwner, neighborStatus } from '../model/taskRules';
+import { isOwner } from '../../auth/model/roles';
+import { canManage, neighborStatus } from '../model/taskRules';
 
 interface TaskCardProps {
   task: Task;

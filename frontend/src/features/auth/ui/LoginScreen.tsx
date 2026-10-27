@@ -4,11 +4,12 @@ import { MESSAGES } from '../../../core/messages/messages';
 import { theme } from '../../../core/theme/theme';
 import { useSessionExpired } from '../../../core/session/sessionNotice';
 import { useLogin } from '../model/useLogin';
-import { AuthField } from './AuthField';
+import { FormField } from '../../../core/ui/FormField';
 import { AuthLayout } from './AuthLayout';
-import { ErrorNotice } from './ErrorNotice';
+import { ErrorNotice } from '../../../core/ui/ErrorNotice';
 import { LinkButton } from './LinkButton';
-import { PrimaryButton } from './PrimaryButton';
+import { PrimaryButton } from '../../../core/ui/PrimaryButton';
+import { ROUTES } from '../../../core/routes';
 
 export function LoginScreen() {
   const login = useLogin();
@@ -18,11 +19,11 @@ export function LoginScreen() {
       icon="lock"
       subtitle={MESSAGES.login.subtitle}
       title={MESSAGES.login.title}
-      topLink={{ prompt: MESSAGES.login.noAccount, label: MESSAGES.login.signUp, route: '/cadastro' }}
+      topLink={{ prompt: MESSAGES.login.noAccount, label: MESSAGES.login.signUp, route: ROUTES.register }}
     >
       <View style={styles.form}>
         {sessionExpired ? <ErrorNotice message={MESSAGES.session.expired} /> : null}
-        <AuthField
+        <FormField
           field={{
             label: MESSAGES.registration.email,
             value: login.form.email,
@@ -30,7 +31,7 @@ export function LoginScreen() {
             onChangeText: (value) => login.updateField('email', value),
           }}
         />
-        <AuthField
+        <FormField
           field={{
             label: MESSAGES.registration.password,
             value: login.form.senha,
@@ -46,7 +47,7 @@ export function LoginScreen() {
           loading={login.isSubmitting}
           onPress={login.submit}
         />
-        <LinkButton label={MESSAGES.login.createAccount} onPress={() => router.replace('/cadastro')} />
+        <LinkButton label={MESSAGES.login.createAccount} onPress={() => router.replace(ROUTES.register)} />
       </View>
     </AuthLayout>
   );

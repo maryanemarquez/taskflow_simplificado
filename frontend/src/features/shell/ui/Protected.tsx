@@ -1,9 +1,10 @@
 import type { ReactNode } from 'react';
 import { Redirect } from 'expo-router';
-import { useRequireSession } from '../../features/auth/model/useRequireSession';
-import type { CurrentUser } from '../../features/auth/model/authTypes';
+import { useRequireSession } from '../../auth/model/useRequireSession';
+import type { CurrentUser } from '../../auth/model/authTypes';
 import { AppShell } from './AppShell';
 import { SessionError, SessionLoading } from './SessionNotice';
+import { ROUTES } from '../../../core/routes';
 
 interface ProtectedProps {
   children: (user: CurrentUser) => ReactNode;
@@ -14,13 +15,13 @@ export function Protected({ children }: ProtectedProps) {
   const session = useRequireSession();
   switch (session.status) {
     case 'anonymous':
-      return <Redirect href="/login" />;
+      return <Redirect href={ROUTES.login} />;
     case 'loading':
       return <SessionLoading />;
     case 'error':
       return <SessionError message={session.message} onRetry={session.retry} />;
     case 'no-team':
-      return <Redirect href="/sem-equipe" />;
+      return <Redirect href={ROUTES.noTeam} />;
     case 'ready':
       return <AppShell user={session.user}>{children(session.user)}</AppShell>;
   }

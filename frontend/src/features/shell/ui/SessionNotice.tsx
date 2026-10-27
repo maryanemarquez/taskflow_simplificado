@@ -1,7 +1,7 @@
 import { Pressable, StyleSheet, Text, View } from 'react-native';
-import { useLogout } from '../../features/auth/model/useLogout';
-import { MESSAGES } from '../messages/messages';
-import { theme } from '../theme/theme';
+import { useLogout } from '../../auth/model/useLogout';
+import { MESSAGES } from '../../../core/messages/messages';
+import { theme } from '../../../core/theme/theme';
 
 /** Tela de espera enquanto a sessão é carregada. */
 export function SessionLoading() {

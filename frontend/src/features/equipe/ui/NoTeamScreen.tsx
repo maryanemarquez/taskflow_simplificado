@@ -4,19 +4,20 @@ import { MESSAGES } from '../../../core/messages/messages';
 import { theme } from '../../../core/theme/theme';
 import { Brand } from '../../../core/ui/Brand';
 import { Icon } from '../../../core/ui/Icon';
-import { SessionError } from '../../../core/ui/SessionNotice';
+import { SessionError } from '../../shell/ui/SessionNotice';
 import { useLogout } from '../../auth/model/useLogout';
 import { useRequireSession } from '../../auth/model/useRequireSession';
-import { PrimaryButton } from '../../auth/ui/PrimaryButton';
+import { PrimaryButton } from '../../../core/ui/PrimaryButton';
+import { ROUTES } from '../../../core/routes';
 
 export function NoTeamScreen() {
   const session = useRequireSession();
   const logout = useLogout();
   if (session.status === 'anonymous') {
-    return <Redirect href="/login" />;
+    return <Redirect href={ROUTES.login} />;
   }
   if (session.status === 'ready') {
-    return <Redirect href="/dashboard" />;
+    return <Redirect href={ROUTES.dashboard} />;
   }
   if (session.status === 'error') {
     return <SessionError message={session.message} onRetry={session.retry} />;

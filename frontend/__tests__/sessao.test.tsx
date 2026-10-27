@@ -4,7 +4,7 @@ import { fireEvent, screen, waitFor } from '@testing-library/react-native';
 import { router } from 'expo-router';
 import { NetworkRequestError } from '../src/core/api/httpErrors';
 import { session } from '../src/core/session/session';
-import { Protected } from '../src/core/ui/Protected';
+import { Protected } from '../src/features/shell/ui/Protected';
 import { authApi } from '../src/features/auth/api/authApi';
 import { renderWithClient, MEMBER, OWNER, WITHOUT_TEAM } from './testUtils';
 

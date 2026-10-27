@@ -10,7 +10,7 @@ import { useKanbanDrag } from '../model/useKanbanDrag';
 import { Draggable, DropZone } from './dragDrop';
 import type { TaskBoardActions, TaskBoardBusy } from './taskBoardTypes';
 import { TaskCard } from './TaskCard';
-import { ErrorNotice } from '../../auth/ui/ErrorNotice';
+import { ErrorNotice } from '../../../core/ui/ErrorNotice';
 
 interface KanbanBoardProps extends TaskBoardActions, TaskBoardBusy {
   tasks: Task[];

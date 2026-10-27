@@ -2,9 +2,9 @@ import { useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { MESSAGES } from '../../../core/messages/messages';
 import { theme } from '../../../core/theme/theme';
-import { AuthField } from '../../auth/ui/AuthField';
-import { ErrorNotice } from '../../auth/ui/ErrorNotice';
-import { PrimaryButton } from '../../auth/ui/PrimaryButton';
+import { FormField } from '../../../core/ui/FormField';
+import { ErrorNotice } from '../../../core/ui/ErrorNotice';
+import { PrimaryButton } from '../../../core/ui/PrimaryButton';
 import type { Member } from '../../membros/api/membrosApi';
 import type { Task, TaskInput } from '../api/tarefasApi';
 import { DatePickerField } from './DatePickerField';
@@ -45,8 +45,8 @@ export function TaskForm({ task, members, message, fieldErrors = {}, submitting 
 
   return (
     <View style={styles.form}>
-      <AuthField field={{ label: MESSAGES.tasks.taskTitle, value: title, onChangeText: setTitle, error: fieldErrors.titulo, autoCapitalize: 'sentences' }} />
-      <AuthField field={{ label: MESSAGES.tasks.description, value: description, onChangeText: setDescription, error: fieldErrors.descricao, autoCapitalize: 'sentences' }} />
+      <FormField field={{ label: MESSAGES.tasks.taskTitle, value: title, onChangeText: setTitle, error: fieldErrors.titulo, autoCapitalize: 'sentences' }} />
+      <FormField field={{ label: MESSAGES.tasks.description, value: description, onChangeText: setDescription, error: fieldErrors.descricao, autoCapitalize: 'sentences' }} />
       <DatePickerField error={fieldErrors.prazo} onChange={setDueDate} originalValue={task?.prazo ?? null} value={dueDate} />
       {members ? (
         <View style={styles.assigneeField}>

@@ -1,9 +1,9 @@
 import { useState, type ReactNode } from 'react';
 import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
-import type { CurrentUser } from '../../features/auth/model/authTypes';
-import { MESSAGES } from '../messages/messages';
-import { theme } from '../theme/theme';
-import { useViewport } from '../theme/useViewport';
+import type { CurrentUser } from '../../auth/model/authTypes';
+import { MESSAGES } from '../../../core/messages/messages';
+import { theme } from '../../../core/theme/theme';
+import { useViewport } from '../../../core/theme/useViewport';
 import { Sidebar } from './Sidebar';
 import { Topbar } from './Topbar';
 

@@ -1,4 +1,5 @@
 import type { CurrentUser } from '../../auth/model/authTypes';
+import { isOwner } from '../../auth/model/roles';
 import type { Task, TaskStatus } from '../api/tarefasApi';
 
 export const STATUS_ORDER: TaskStatus[] = ['PENDENTE', 'EM_ANDAMENTO', 'CONCLUIDA'];
@@ -6,10 +7,6 @@ export const STATUS_ORDER: TaskStatus[] = ['PENDENTE', 'EM_ANDAMENTO', 'CONCLUID
 /** Estágio vizinho no fluxo (+1 avança, -1 retrocede), ou null no limite. */
 export function neighborStatus(status: TaskStatus, step: 1 | -1): TaskStatus | null {
   return STATUS_ORDER[STATUS_ORDER.indexOf(status) + step] ?? null;
-}
-
-export function isOwner(user: CurrentUser): boolean {
-  return user.equipe?.papel === 'DONO';
 }
 
 /** O Dono mexe em qualquer tarefa; o Membro só nas que é responsável. */

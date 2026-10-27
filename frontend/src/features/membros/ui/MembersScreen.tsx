@@ -7,16 +7,17 @@ import { Badge } from '../../../core/ui/Badge';
 import { EmptyState } from '../../../core/ui/EmptyState';
 import { Icon } from '../../../core/ui/Icon';
 import { QueryStatus } from '../../../core/ui/LoadError';
-import type { CurrentUser } from '../../auth/model/authTypes';
-import { ErrorNotice } from '../../auth/ui/ErrorNotice';
-import { PrimaryButton } from '../../auth/ui/PrimaryButton';
+import type { CurrentUser, Role } from '../../auth/model/authTypes';
+import { isOwner, isOwnerRole } from '../../auth/model/roles';
+import { ErrorNotice } from '../../../core/ui/ErrorNotice';
+import { PrimaryButton } from '../../../core/ui/PrimaryButton';
 import { useMemberActions, useMembers } from '../model/useMembers';
 
 export function MembersScreen({ user }: { user: CurrentUser }) {
   const members = useMembers();
   const actions = useMemberActions();
   const { isMobile } = useViewport();
-  const isOwner = user.equipe?.papel === 'DONO';
+  const owner = isOwner(user);
   const list = members.data ?? [];
   return (
     <View style={styles.page}>
@@ -40,7 +41,7 @@ export function MembersScreen({ user }: { user: CurrentUser }) {
               <Text style={[styles.headerCell, styles.colMember]}>{MESSAGES.members.columnMember}</Text>
               <Text style={[styles.headerCell, styles.colEmail]}>{MESSAGES.members.columnEmail}</Text>
               <Text style={[styles.headerCell, styles.colRole]}>{MESSAGES.members.columnRole}</Text>
-              {isOwner ? <View style={styles.colAction} /> : null}
+              {owner ? <View style={styles.colAction} /> : null}
             </View>
           ) : null}
           {list.map((member) => (
@@ -52,14 +53,14 @@ export function MembersScreen({ user }: { user: CurrentUser }) {
               <Text numberOfLines={1} style={[styles.email, styles.colEmail]}>{member.email}</Text>
               <View style={styles.colRole}>
                 <Badge
-                  color={member.papel === 'DONO' ? theme.colors.primary : theme.colors.textSecondary}
+                  color={isOwnerRole(member.papel) ? theme.colors.primary : theme.colors.textSecondary}
                   label={roleLabel(member.papel)}
-                  softColor={member.papel === 'DONO' ? theme.colors.primarySoft : theme.colors.border}
+                  softColor={isOwnerRole(member.papel) ? theme.colors.primarySoft : theme.colors.border}
                 />
               </View>
-              {isOwner ? (
+              {owner ? (
                 <View style={styles.colAction}>
-                  {member.papel !== 'DONO' ? (
+                  {!isOwnerRole(member.papel) ? (
                     <Pressable
                       accessibilityLabel={MESSAGES.members.remove}
                       accessibilityRole="button"
@@ -78,7 +79,7 @@ export function MembersScreen({ user }: { user: CurrentUser }) {
           ))}
         </View>
       )}
-      {isOwner ? (
+      {owner ? (
         <View style={styles.invite}>
           <View style={styles.inviteHeader}>
             <Icon color={theme.colors.primary} name="user-plus" size={18} />
@@ -106,8 +107,8 @@ export function MembersScreen({ user }: { user: CurrentUser }) {
   );
 }
 
-function roleLabel(role: string) {
-  return role === 'DONO' ? MESSAGES.common.owner : MESSAGES.common.member;
+function roleLabel(role: Role) {
+  return isOwnerRole(role) ? MESSAGES.common.owner : MESSAGES.common.member;
 }
 
 const styles = StyleSheet.create({

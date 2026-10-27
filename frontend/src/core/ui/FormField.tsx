@@ -1,7 +1,7 @@
 import { StyleSheet, Text, TextInput, View, type TextInputProps } from 'react-native';
-import { theme } from '../../../core/theme/theme';
+import { theme } from '../theme/theme';
 
-export interface AuthFieldDefinition {
+export interface FormFieldDefinition {
   label: string;
   value: string;
   onChangeText: (value: string) => void;
@@ -11,11 +11,11 @@ export interface AuthFieldDefinition {
   autoCapitalize?: TextInputProps['autoCapitalize'];
 }
 
-interface AuthFieldProps {
-  field: AuthFieldDefinition;
+interface FormFieldProps {
+  field: FormFieldDefinition;
 }
 
-export function AuthField({ field }: AuthFieldProps) {
+export function FormField({ field }: FormFieldProps) {
   return (
     <View style={styles.field}>
       <Text style={styles.label}>{field.label}</Text>

@@ -1,15 +1,16 @@
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { router, usePathname } from 'expo-router';
-import type { CurrentUser } from '../../features/auth/model/authTypes';
-import { MESSAGES } from '../messages/messages';
-import { theme } from '../theme/theme';
-import { Icon, type IconName } from './Icon';
-import { Brand } from './Brand';
+import type { CurrentUser } from '../../auth/model/authTypes';
+import { MESSAGES } from '../../../core/messages/messages';
+import { theme } from '../../../core/theme/theme';
+import { Icon, type IconName } from '../../../core/ui/Icon';
+import { Brand } from '../../../core/ui/Brand';
+import { ROUTES } from '../../../core/routes';
 
 const ITEMS: { label: string; route: string; icon: IconName }[] = [
-  { label: MESSAGES.nav.dashboard, route: '/dashboard', icon: 'grid' },
-  { label: MESSAGES.nav.tasks, route: '/tarefas', icon: 'check-square' },
-  { label: MESSAGES.nav.members, route: '/membros', icon: 'users' },
+  { label: MESSAGES.nav.dashboard, route: ROUTES.dashboard, icon: 'grid' },
+  { label: MESSAGES.nav.tasks, route: ROUTES.tasks, icon: 'check-square' },
+  { label: MESSAGES.nav.members, route: ROUTES.members, icon: 'users' },
 ];
 
 interface SidebarProps {

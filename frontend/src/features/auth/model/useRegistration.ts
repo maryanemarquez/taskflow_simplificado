@@ -5,11 +5,11 @@ import { ApiRequestError, errorMessage, fieldMessages } from '../../../core/api/
 import { MESSAGES } from '../../../core/messages/messages';
 import { session } from '../../../core/session/session';
 import { authApi } from '../api/authApi';
-import type { AccountType, RegistrationForm, RegistrationPayload } from './authTypes';
+import type { RegistrationForm, RegistrationPayload, Role } from './authTypes';
 import { validateRegistration, type RegistrationErrors, type RegistrationField } from './registrationValidation';
+import { ROUTES } from '../../../core/routes';
 
 const EMPTY_FORM: RegistrationForm = { nome: '', email: '', senha: '', tipo: null };
-const HOME_ROUTE = '/';
 const FORM_FIELDS: RegistrationField[] = ['nome', 'email', 'senha', 'tipo'];
 
 /** Erros que a API aponta por campo; `EMAIL_JA_CADASTRADO` não traz `erros[]`, mas pertence ao campo e-mail. */
@@ -37,7 +37,7 @@ export function useRegistration() {
     onSuccess: (response) => {
       queryClient.clear();
       session.setToken(response.accessToken);
-      router.replace(HOME_ROUTE);
+      router.replace(ROUTES.home);
     },
     onError: (error) => {
       const fieldErrors = serverFieldErrors(error);
@@ -54,7 +54,7 @@ export function useRegistration() {
     setErrors((current) => ({ ...current, [field]: undefined }));
   };
 
-  const updateType = (tipo: AccountType) => {
+  const updateType = (tipo: Role) => {
     setForm((current) => ({ ...current, tipo }));
     setErrors((current) => ({ ...current, tipo: undefined }));
   };

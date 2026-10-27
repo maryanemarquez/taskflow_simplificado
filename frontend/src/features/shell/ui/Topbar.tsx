@@ -1,11 +1,12 @@
 import { Pressable, StyleSheet, Text, View } from 'react-native';
-import type { CurrentUser } from '../../features/auth/model/authTypes';
-import { useLogout } from '../../features/auth/model/useLogout';
-import { MESSAGES } from '../messages/messages';
-import { theme } from '../theme/theme';
-import { useViewport } from '../theme/useViewport';
-import { Avatar } from './Avatar';
-import { Icon } from './Icon';
+import type { CurrentUser } from '../../auth/model/authTypes';
+import { useLogout } from '../../auth/model/useLogout';
+import { MESSAGES } from '../../../core/messages/messages';
+import { theme } from '../../../core/theme/theme';
+import { useViewport } from '../../../core/theme/useViewport';
+import { Avatar } from '../../../core/ui/Avatar';
+import { Icon } from '../../../core/ui/Icon';
+import { isOwner } from '../../auth/model/roles';
 
 interface TopbarProps {
   user: CurrentUser;
@@ -16,7 +17,7 @@ export function Topbar({ user, onMenu }: TopbarProps) {
   const logout = useLogout();
   const { isMobile } = useViewport();
   const name = user.usuario.nome;
-  const role = user.equipe?.papel === 'DONO' ? MESSAGES.common.owner : MESSAGES.common.member;
+  const role = isOwner(user) ? MESSAGES.common.owner : MESSAGES.common.member;
   return (
     <View style={styles.bar}>
       {isMobile ? (

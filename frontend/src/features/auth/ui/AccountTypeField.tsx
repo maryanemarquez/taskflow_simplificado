@@ -1,15 +1,15 @@
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { MESSAGES } from '../../../core/messages/messages';
 import { theme } from '../../../core/theme/theme';
-import type { AccountType } from '../model/authTypes';
+import type { Role } from '../model/authTypes';
 
 interface AccountTypeFieldProps {
-  value: AccountType | null;
+  value: Role | null;
   error?: string;
-  onChange: (type: AccountType) => void;
+  onChange: (type: Role) => void;
 }
 
-const OPTIONS: { type: AccountType; label: string; hint: string }[] = [
+const OPTIONS: { type: Role; label: string; hint: string }[] = [
   { type: 'DONO', label: MESSAGES.registration.typeOwner, hint: MESSAGES.registration.typeOwnerHint },
   { type: 'MEMBRO', label: MESSAGES.registration.typeMember, hint: MESSAGES.registration.typeMemberHint },
 ];
