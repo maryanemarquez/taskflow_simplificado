@@ -27,6 +27,7 @@ export function useLogin() {
 
   const submit = () => mutation.mutate({ email: form.email.trim().toLowerCase(), senha: form.senha });
 
-  const message = mutation.error ? errorMessage(mutation.error, MESSAGES.login.invalidCredentials) : null;
+  // Credencial inválida chega da API (`CREDENCIAIS_INVALIDAS`); falha de rede tem texto próprio.
+  const message = mutation.error ? errorMessage(mutation.error, MESSAGES.errors.generic) : null;
   return { form, updateField, submit, isSubmitting: mutation.isPending, errorMessage: message };
 }

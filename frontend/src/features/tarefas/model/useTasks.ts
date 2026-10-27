@@ -1,14 +1,12 @@
 import { useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { errorMessage } from '../../../core/api/httpErrors';
+import { QUERY_KEYS } from '../../../core/api/queryKeys';
 import { MESSAGES } from '../../../core/messages/messages';
 import { tarefasApi, type TaskInput, type TaskStatus } from '../api/tarefasApi';
 
-export const TASKS_QUERY_KEY = ['tasks'] as const;
-const DASHBOARD_QUERY_KEY = ['dashboard'] as const;
-
 export function useTasks() {
-  return useQuery({ queryKey: TASKS_QUERY_KEY, queryFn: tarefasApi.list });
+  return useQuery({ queryKey: QUERY_KEYS.tasks, queryFn: tarefasApi.list });
 }
 
 export function useTaskActions(onDone: () => void) {
@@ -17,8 +15,8 @@ export function useTaskActions(onDone: () => void) {
   const handlers = {
     onSuccess: () => {
       setMessage(null);
-      queryClient.invalidateQueries({ queryKey: TASKS_QUERY_KEY });
-      queryClient.invalidateQueries({ queryKey: DASHBOARD_QUERY_KEY });
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.tasks });
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.dashboard });
       onDone();
     },
     onError: (error: unknown) => setMessage(errorMessage(error, MESSAGES.errors.generic)),

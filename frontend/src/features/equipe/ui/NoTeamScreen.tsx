@@ -1,24 +1,27 @@
 import { StyleSheet, Text, View } from 'react-native';
 import { Redirect } from 'expo-router';
 import { MESSAGES } from '../../../core/messages/messages';
-import { useToken } from '../../../core/session/session';
 import { theme } from '../../../core/theme/theme';
 import { Brand } from '../../../core/ui/Brand';
 import { Icon } from '../../../core/ui/Icon';
-import { useCurrentUser } from '../../auth/model/authQueries';
+import { SessionError } from '../../../core/ui/SessionNotice';
 import { useLogout } from '../../auth/model/useLogout';
+import { useRequireSession } from '../../auth/model/useRequireSession';
 import { PrimaryButton } from '../../auth/ui/PrimaryButton';
 
 export function NoTeamScreen() {
-  const token = useToken();
-  const { data, isError } = useCurrentUser();
+  const session = useRequireSession();
   const logout = useLogout();
-  if (!token || isError) {
+  if (session.status === 'anonymous') {
     return <Redirect href="/login" />;
   }
-  if (data?.equipe) {
+  if (session.status === 'ready') {
     return <Redirect href="/dashboard" />;
   }
+  if (session.status === 'error') {
+    return <SessionError message={session.message} onRetry={session.retry} />;
+  }
+  const email = session.status === 'no-team' ? session.user.usuario.email : null;
   return (
     <View style={styles.page}>
       <View style={styles.header}>
@@ -31,9 +34,9 @@ export function NoTeamScreen() {
           </View>
           <Text accessibilityRole="header" style={styles.title}>{MESSAGES.noTeam.title}</Text>
           <Text style={styles.text}>{MESSAGES.noTeam.text}</Text>
-          {data ? (
+          {email ? (
             <View style={styles.email}>
-              <Text style={styles.emailText}>{MESSAGES.noTeam.yourEmail(data.usuario.email)}</Text>
+              <Text style={styles.emailText}>{MESSAGES.noTeam.yourEmail(email)}</Text>
             </View>
           ) : null}
           <View style={styles.button}>

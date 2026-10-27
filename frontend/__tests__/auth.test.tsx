@@ -1,7 +1,7 @@
 import React from 'react';
 import { fireEvent, screen, waitFor } from '@testing-library/react-native';
 import { router } from 'expo-router';
-import { ApiRequestError } from '../src/core/api/httpErrors';
+import { ApiRequestError, NetworkRequestError } from '../src/core/api/httpErrors';
 import { session } from '../src/core/session/session';
 import { authApi } from '../src/features/auth/api/authApi';
 import { LoginScreen } from '../src/features/auth/ui/LoginScreen';
@@ -132,11 +132,57 @@ it('HIST-001-auth/C10 - login inválido mostra a mensagem genérica', async () =
   expect(router.replace).not.toHaveBeenCalled();
 });
 
-it('HIST-001-auth/C10 - falha sem resposta da API usa a mensagem padrão', async () => {
-  jest.mocked(authApi.login).mockRejectedValue(new Error('rede'));
+it('HIST-001-auth/C10 - falha de rede não é apresentada como credencial inválida', async () => {
+  jest.mocked(authApi.login).mockRejectedValue(new NetworkRequestError('network'));
   renderWithClient(<LoginScreen />);
 
   fillLogin();
 
-  expect(await screen.findByText('E-mail ou senha inválidos.')).toBeTruthy();
+  expect(
+    await screen.findByText('Não foi possível conectar ao servidor. Verifique sua conexão e tente novamente.'),
+  ).toBeTruthy();
+  expect(screen.queryByText('E-mail ou senha inválidos.')).toBeNull();
+});
+
+it('HIST-001-auth/C10 - erro inesperado usa a mensagem padrão, não a de credencial', async () => {
+  jest.mocked(authApi.login).mockRejectedValue(new Error('falha'));
+  renderWithClient(<LoginScreen />);
+
+  fillLogin();
+
+  expect(await screen.findByText('Não foi possível concluir a operação. Tente novamente.')).toBeTruthy();
+  expect(screen.queryByText('E-mail ou senha inválidos.')).toBeNull();
+});
+
+it('HIST-001-auth/C07 - erro de campo da API aparece no campo, sem banner genérico', async () => {
+  const problem = {
+    codigo: 'VALIDACAO',
+    mensagem: 'Um ou mais campos são inválidos.',
+    erros: [
+      {
+        campo: 'senha',
+        codigo: 'SENHA_FORA_DA_POLITICA',
+        mensagem: 'A senha deve ter no mínimo 8 caracteres, com ao menos uma letra e um número.',
+      },
+    ],
+  };
+  jest.mocked(authApi.register).mockRejectedValue(new ApiRequestError(problem, { status: 400 }));
+  renderWithClient(<RegistrationScreen />);
+
+  fillRegistration('Senha1234');
+
+  expect(
+    await screen.findByText('A senha deve ter no mínimo 8 caracteres, com ao menos uma letra e um número.'),
+  ).toBeTruthy();
+  expect(screen.queryByText('Não foi possível concluir o cadastro. Tente novamente.')).toBeNull();
+});
+
+it('HIST-001-auth/C07 - e-mail já cadastrado aparece uma única vez, no campo e-mail', async () => {
+  const problem = { codigo: 'EMAIL_JA_CADASTRADO', mensagem: 'Já existe uma conta com este e-mail.' };
+  jest.mocked(authApi.register).mockRejectedValue(new ApiRequestError(problem, { status: 409 }));
+  renderWithClient(<RegistrationScreen />);
+
+  fillRegistration('Senha1234');
+
+  expect(await screen.findAllByText('Já existe uma conta com este e-mail.')).toHaveLength(1);
 });

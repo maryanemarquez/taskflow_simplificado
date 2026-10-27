@@ -1,25 +1,19 @@
-import { StyleSheet, Text, View } from 'react-native';
 import { Redirect } from 'expo-router';
-import { useCurrentUser } from '../src/features/auth/model/authQueries';
-import { MESSAGES } from '../src/core/messages/messages';
-import { useToken } from '../src/core/session/session';
+import { SessionError, SessionLoading } from '../src/core/ui/SessionNotice';
+import { useRequireSession } from '../src/features/auth/model/useRequireSession';
 
 export default function IndexRoute() {
-  const token = useToken();
-  const { data, isError } = useCurrentUser();
-  if (!token || isError) {
-    return <Redirect href="/login" />;
+  const session = useRequireSession();
+  switch (session.status) {
+    case 'anonymous':
+      return <Redirect href="/login" />;
+    case 'loading':
+      return <SessionLoading />;
+    case 'error':
+      return <SessionError message={session.message} onRetry={session.retry} />;
+    case 'no-team':
+      return <Redirect href="/sem-equipe" />;
+    case 'ready':
+      return <Redirect href="/dashboard" />;
   }
-  if (!data) {
-    return (
-      <View style={styles.loading}>
-        <Text>{MESSAGES.common.loading}</Text>
-      </View>
-    );
-  }
-  return <Redirect href={data.equipe ? '/dashboard' : '/sem-equipe'} />;
 }
-
-const styles = StyleSheet.create({
-  loading: { alignItems: 'center', flex: 1, justifyContent: 'center' },
-});

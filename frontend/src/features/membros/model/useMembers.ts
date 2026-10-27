@@ -1,15 +1,12 @@
 import { useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { errorMessage } from '../../../core/api/httpErrors';
+import { QUERY_KEYS } from '../../../core/api/queryKeys';
 import { MESSAGES } from '../../../core/messages/messages';
 import { membrosApi } from '../api/membrosApi';
 
-export const MEMBERS_QUERY_KEY = ['members'] as const;
-const TASKS_QUERY_KEY = ['tasks'] as const;
-const DASHBOARD_QUERY_KEY = ['dashboard'] as const;
-
 export function useMembers() {
-  return useQuery({ queryKey: MEMBERS_QUERY_KEY, queryFn: membrosApi.list });
+  return useQuery({ queryKey: QUERY_KEYS.members, queryFn: membrosApi.list });
 }
 
 export function useMemberActions() {
@@ -18,9 +15,9 @@ export function useMemberActions() {
   const [message, setMessage] = useState<string | null>(null);
   const refresh = () => {
     setMessage(null);
-    queryClient.invalidateQueries({ queryKey: MEMBERS_QUERY_KEY });
-    queryClient.invalidateQueries({ queryKey: TASKS_QUERY_KEY });
-    queryClient.invalidateQueries({ queryKey: DASHBOARD_QUERY_KEY });
+    queryClient.invalidateQueries({ queryKey: QUERY_KEYS.members });
+    queryClient.invalidateQueries({ queryKey: QUERY_KEYS.tasks });
+    queryClient.invalidateQueries({ queryKey: QUERY_KEYS.dashboard });
   };
   const onError = (error: unknown) => setMessage(errorMessage(error, MESSAGES.errors.generic));
   const addMutation = useMutation({

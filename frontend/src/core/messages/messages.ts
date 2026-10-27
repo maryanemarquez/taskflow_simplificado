@@ -3,6 +3,13 @@ export const MESSAGES = {
   brandMark: 'T',
   errors: {
     generic: 'Não foi possível concluir a operação. Tente novamente.',
+    network: 'Não foi possível conectar ao servidor. Verifique sua conexão e tente novamente.',
+    timeout: 'O servidor demorou para responder. Tente novamente.',
+    supportCode: (requestId: string) => `(código de suporte: ${requestId})`,
+  },
+  session: {
+    loadError: 'Não foi possível carregar a sua sessão.',
+    retry: 'Tentar novamente',
   },
   common: {
     loading: 'Carregando…',
@@ -55,7 +62,6 @@ export const MESSAGES = {
     createAccount: 'Criar conta',
     noAccount: 'Ainda não tem uma conta?',
     signUp: 'Cadastre-se',
-    invalidCredentials: 'E-mail ou senha inválidos.',
   },
   noTeam: {
     title: 'Você não faz parte de nenhuma equipe',
