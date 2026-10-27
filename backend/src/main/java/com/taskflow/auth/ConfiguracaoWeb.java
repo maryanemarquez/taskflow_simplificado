@@ -2,6 +2,7 @@ package com.taskflow.auth;
 
 import com.taskflow.configuracao.PropriedadesCors;
 import com.taskflow.configuracao.Rotas;
+import com.taskflow.erro.CorrelacaoFiltro;
 import java.util.List;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
@@ -44,6 +45,7 @@ public class ConfiguracaoWeb implements WebMvcConfigurer {
         registry.addMapping(Rotas.PREFIXO_API + "/**")
                 .allowedOrigins(origemPermitida)
                 .allowedMethods("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS")
-                .allowedHeaders("*");
+                .allowedHeaders("*")
+                .exposedHeaders(CorrelacaoFiltro.CABECALHO);
     }
 }
