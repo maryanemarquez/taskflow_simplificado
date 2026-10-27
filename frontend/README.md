@@ -18,7 +18,7 @@ npm run web              # abre no navegador
 | `npm run web` | Servidor do Expo no navegador |
 | `npm test` | Testes (jest-expo) |
 | `npm run test:coverage` | Testes com cobertura |
-| `npm run typecheck` | `tsc` em `src`, `app` **e** `__tests__` (`tsconfig.test.json`) |
+| `npm run typecheck` | `tsc` em `src`, `app` **e** `__tests__` (`tsconfig.json`) |
 | `npm run lint` | ESLint, sem nenhum aviso permitido |
 | `npm run build:web` | Gera o site estático em `dist/` |
 
