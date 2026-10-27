@@ -12,6 +12,7 @@ import jakarta.persistence.Index;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import jakarta.persistence.Version;
 import java.time.Instant;
 import java.time.LocalDate;
 
@@ -30,10 +31,10 @@ public class Tarefa {
     @JoinColumn(name = "equipe_id", nullable = false)
     private Equipe equipe;
 
-    @Column(name = "titulo", length = 150, nullable = false)
+    @Column(name = "titulo", length = LimitesCampos.TITULO_TAREFA, nullable = false)
     private String titulo;
 
-    @Column(name = "descricao", length = 2000)
+    @Column(name = "descricao", length = LimitesCampos.DESCRICAO_TAREFA)
     private String descricao;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
@@ -54,19 +55,23 @@ public class Tarefa {
     @Column(name = "criado_em", nullable = false)
     private Instant criadoEm;
 
+    @Version
+    @Column(name = "versao", nullable = false)
+    private long versao;
+
     protected Tarefa() {
     }
 
-    public Tarefa(Equipe equipe, Usuario criadoPor, Instant criadoEm) {
-        this.equipe = equipe;
+    public Tarefa(Usuario criadoPor, Usuario responsavel, DadosTarefa dados, Instant criadoEm) {
+        this.equipe = criadoPor.getEquipe();
         this.criadoPor = criadoPor;
+        this.responsavel = responsavel;
         this.criadoEm = criadoEm;
+        aplicar(dados);
     }
 
-    public void atualizar(String novoTitulo, String novaDescricao, LocalDate novoPrazo) {
-        this.titulo = novoTitulo;
-        this.descricao = novaDescricao;
-        this.prazo = novoPrazo;
+    public void atualizar(DadosTarefa dados) {
+        aplicar(dados);
     }
 
     public void atribuirA(Usuario novoResponsavel) {
@@ -97,10 +102,6 @@ public class Tarefa {
         return responsavel;
     }
 
-    public Usuario getCriadoPor() {
-        return criadoPor;
-    }
-
     public StatusTarefa getStatus() {
         return status;
     }
@@ -109,7 +110,9 @@ public class Tarefa {
         return prazo;
     }
 
-    public Instant getCriadoEm() {
-        return criadoEm;
+    private void aplicar(DadosTarefa dados) {
+        this.titulo = dados.titulo();
+        this.descricao = dados.descricao();
+        this.prazo = dados.prazo();
     }
 }

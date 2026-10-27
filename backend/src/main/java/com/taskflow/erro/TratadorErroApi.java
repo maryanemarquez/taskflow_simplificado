@@ -5,9 +5,9 @@ import jakarta.servlet.http.HttpServletRequest;
 import java.net.URI;
 import java.util.List;
 import java.util.Locale;
-import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.http.MediaType;
 import org.springframework.http.ProblemDetail;
 import org.springframework.http.ResponseEntity;
@@ -20,34 +20,24 @@ import org.springframework.web.method.annotation.MethodArgumentTypeMismatchExcep
 @RestControllerAdvice
 public class TratadorErroApi {
 
-    private static final int STATUS_NAO_ENCONTRADO = 404;
-    private static final int STATUS_METODO_NAO_PERMITIDO = 405;
-    private static final int STATUS_TIPO_NAO_SUPORTADO = 415;
-    private static final int STATUS_REQUISICAO_INVALIDA = 400;
+    private static final String PREFIXO_TIPO = "urn:taskflow:erro:";
     /** O Jackson cita o campo que falhou assim: {@code (through reference chain: Tipo["campo"])}. */
     private static final Pattern CAMPO_COM_FALHA = Pattern.compile("\\[\"([A-Za-z0-9_]{1,50})\"]\\)?\\s*$");
 
-    private final LoggingCentralizado logging;
+    private final RegistroEventos registro;
 
-    public TratadorErroApi(LoggingCentralizado logging) {
-        this.logging = logging;
+    public TratadorErroApi(RegistroEventos registro) {
+        this.registro = registro;
     }
 
+    /** Erros previstos, inclusive validações: registra só os de segurança. */
     @ExceptionHandler(ErroDeAplicacao.class)
     public ResponseEntity<ProblemDetail> tratarErroAplicacao(
             ErroDeAplicacao erro,
             HttpServletRequest requisicao) {
-        return criarResposta(erro.codigo(), requisicao.getRequestURI(), null);
-    }
-
-    @ExceptionHandler(ErroValidacao.class)
-    public ResponseEntity<ProblemDetail> tratarErroValidacao(
-            ErroValidacao erro,
-            HttpServletRequest requisicao) {
-        return criarResposta(
-                CodigoErroApi.VALIDACAO,
-                requisicao.getRequestURI(),
-                List.of(MensagensApi.campo(erro.campo(), erro.codigoCampo())));
+        EventoLog.deSeguranca(erro.codigo()).ifPresent(evento -> registro.registrar(
+                evento, requisicao.getMethod(), requisicao.getRequestURI(), erro.codigo().name()));
+        return criarResposta(erro.codigo(), requisicao.getRequestURI(), erro.erros());
     }
 
     /** Corpo ilegível ou com valor de tipo errado (ex.: data fora do padrão): aponta o campo, quando há. */
@@ -56,15 +46,20 @@ public class TratadorErroApi {
             HttpMessageNotReadableException erro,
             HttpServletRequest requisicao) {
         String campo = campoComFalha(erro);
-        List<Map<String, String>> erros = campo == null
-                ? null
-                : List.of(MensagensApi.campo(campo, MensagensApi.CODIGO_INVALIDO));
+        List<ErroCampo> erros = campo == null
+                ? List.of()
+                : List.of(new ErroCampo(campo, CodigoErroCampo.INVALIDO));
         return criarResposta(CodigoErroApi.VALIDACAO, requisicao.getRequestURI(), erros);
+    }
+
+    @ExceptionHandler(OptimisticLockingFailureException.class)
+    public ResponseEntity<ProblemDetail> tratarConflitoDeConcorrencia(HttpServletRequest requisicao) {
+        return criarResposta(CodigoErroApi.CONFLITO_CONCORRENCIA, requisicao.getRequestURI(), List.of());
     }
 
     @ExceptionHandler(MethodArgumentTypeMismatchException.class)
     public ResponseEntity<ProblemDetail> tratarParametroInvalido(HttpServletRequest requisicao) {
-        return criarResposta(CodigoErroApi.VALIDACAO, requisicao.getRequestURI(), null);
+        return criarResposta(CodigoErroApi.VALIDACAO, requisicao.getRequestURI(), List.of());
     }
 
     /**
@@ -76,25 +71,17 @@ public class TratadorErroApi {
             ServletException erro,
             HttpServletRequest requisicao) {
         int status = erro instanceof ErrorResponse resposta ? resposta.getStatusCode().value() : 0;
-        CodigoErroApi codigo = switch (status) {
-            case STATUS_NAO_ENCONTRADO -> CodigoErroApi.ROTA_NAO_ENCONTRADA;
-            case STATUS_METODO_NAO_PERMITIDO -> CodigoErroApi.METODO_NAO_PERMITIDO;
-            case STATUS_TIPO_NAO_SUPORTADO -> CodigoErroApi.TIPO_CONTEUDO_NAO_SUPORTADO;
-            case STATUS_REQUISICAO_INVALIDA -> CodigoErroApi.VALIDACAO;
-            default -> null;
-        };
-        if (codigo == null) {
-            return tratarErroInesperado(erro, requisicao);
-        }
-        return criarResposta(codigo, requisicao.getRequestURI(), null);
+        return CodigoErroApi.deRequisicaoMvc(status)
+                .map(codigo -> criarResposta(codigo, requisicao.getRequestURI(), List.of()))
+                .orElseGet(() -> tratarErroInesperado(erro, requisicao));
     }
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ProblemDetail> tratarErroInesperado(
             Exception erro,
             HttpServletRequest requisicao) {
-        logging.registrarFalhaInterna(erro);
-        return criarResposta(CodigoErroApi.ERRO_INTERNO, requisicao.getRequestURI(), null);
+        registro.registrar(EventoLog.FALHA_INTERNA, requisicao.getMethod(), requisicao.getRequestURI(), erro);
+        return criarResposta(CodigoErroApi.ERRO_INTERNO, requisicao.getRequestURI(), List.of());
     }
 
     private static String campoComFalha(Throwable erro) {
@@ -114,15 +101,15 @@ public class TratadorErroApi {
     private ResponseEntity<ProblemDetail> criarResposta(
             CodigoErroApi codigo,
             String caminho,
-            List<Map<String, String>> erros) {
+            List<ErroCampo> erros) {
         ProblemDetail problema = ProblemDetail.forStatusAndDetail(codigo.status(), codigo.detalhe());
-        problema.setType(URI.create(MensagensApi.PREFIXO_TIPO + codigo.codigo().toLowerCase(Locale.ROOT)));
+        problema.setType(URI.create(PREFIXO_TIPO + codigo.name().toLowerCase(Locale.ROOT)));
         problema.setTitle(codigo.titulo());
         problema.setInstance(URI.create(caminho));
-        problema.setProperty("codigo", codigo.codigo());
+        problema.setProperty("codigo", codigo.name());
         problema.setProperty("mensagem", codigo.detalhe());
-        if (erros != null) {
-            problema.setProperty("erros", erros);
+        if (!erros.isEmpty()) {
+            problema.setProperty("erros", erros.stream().map(ErroCampo::paraResposta).toList());
         }
         return ResponseEntity.status(codigo.status())
                 .contentType(MediaType.APPLICATION_PROBLEM_JSON)

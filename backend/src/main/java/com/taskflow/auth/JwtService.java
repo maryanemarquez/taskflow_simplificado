@@ -1,6 +1,6 @@
-package com.taskflow.auth.service;
+package com.taskflow.auth;
 
-import com.taskflow.auth.dto.SessaoResponse;
+import com.taskflow.configuracao.PropriedadesSeguranca;
 import com.taskflow.erro.CodigoErroApi;
 import com.taskflow.erro.ErroDeAplicacao;
 import java.nio.charset.StandardCharsets;
@@ -14,7 +14,6 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 /** Emite e valida o JWT de acesso (HS256, 8 horas). Não há refresh token. */
@@ -31,9 +30,9 @@ public class JwtService {
     private final Clock clock;
     private final String segredo;
 
-    public JwtService(Clock clock, @Value("${taskflow.security.jwt.secret}") String segredo) {
+    public JwtService(Clock clock, PropriedadesSeguranca propriedades) {
         this.clock = clock;
-        this.segredo = segredo;
+        this.segredo = propriedades.jwt().secret();
     }
 
     public SessaoResponse emitir(long usuarioId) {

@@ -1,5 +1,7 @@
 package com.taskflow.auth;
 
+import com.taskflow.TesteIntegracaoBase;
+import com.taskflow.configuracao.PropriedadesSeguranca;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.containsString;
@@ -7,8 +9,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import com.taskflow.TesteIntegracaoBase;
-import com.taskflow.auth.service.JwtService;
 import java.time.Clock;
 import java.time.Instant;
 import java.time.ZoneOffset;
@@ -90,10 +90,10 @@ class LoginSessaoIntegrationTest extends TesteIntegracaoBase {
         String token = cadastrar("Ana", "c12@taskflow.invalid");
         long idDoUsuario = idDoUsuario("c12@taskflow.invalid");
         String adulterado = token.substring(0, token.length() - 2) + (token.endsWith("aa") ? "bb" : "aa");
-        JwtService emissorNoPassado = new JwtService(
+        JwtService emissorNoPassado = jwtService(
                 Clock.fixed(Instant.parse("2020-01-01T00:00:00Z"), ZoneOffset.UTC), segredo);
         String expirado = emissorNoPassado.emitir(idDoUsuario).accessToken();
-        String outroSegredo = new JwtService(Clock.systemUTC(), "outro-segredo-completamente-diferente-123456")
+        String outroSegredo = jwtService(Clock.systemUTC(), "outro-segredo-completamente-diferente-123456")
                 .emitir(idDoUsuario).accessToken();
 
         for (String invalido : new String[] {null, "", "lixo", adulterado, expirado, outroSegredo}) {
@@ -113,5 +113,9 @@ class LoginSessaoIntegrationTest extends TesteIntegracaoBase {
 
         enviar("GET", "/api/me", token, null)
                 .andExpect(status().isUnauthorized());
+    }
+
+    private static JwtService jwtService(Clock clock, String segredo) {
+        return new JwtService(clock, new PropriedadesSeguranca(4, new PropriedadesSeguranca.Jwt(segredo)));
     }
 }

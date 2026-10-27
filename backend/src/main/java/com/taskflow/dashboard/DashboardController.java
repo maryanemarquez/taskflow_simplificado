@@ -1,13 +1,13 @@
 package com.taskflow.dashboard;
 
-import com.taskflow.auth.controller.AutenticacaoInterceptor;
+import com.taskflow.auth.UsuarioAutenticado;
+import com.taskflow.configuracao.Rotas;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestAttribute;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/api/dashboard")
+@RequestMapping(Rotas.DASHBOARD)
 public class DashboardController {
 
     private final DashboardService dashboardService;
@@ -18,7 +18,7 @@ public class DashboardController {
 
     @GetMapping
     public DashboardResponse consultar(
-            @RequestAttribute(AutenticacaoInterceptor.ATRIBUTO_USUARIO_ID) Long usuarioId) {
+            @UsuarioAutenticado long usuarioId) {
         return dashboardService.consultar(usuarioId);
     }
 }

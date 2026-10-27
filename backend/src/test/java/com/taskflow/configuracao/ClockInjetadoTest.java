@@ -1,4 +1,4 @@
-package com.taskflow.tempo;
+package com.taskflow.configuracao;
 
 import static org.assertj.core.api.Assertions.assertThat;
 

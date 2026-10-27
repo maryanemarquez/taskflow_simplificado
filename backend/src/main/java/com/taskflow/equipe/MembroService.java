@@ -1,35 +1,37 @@
 package com.taskflow.equipe;
 
-import com.taskflow.dominio.Campos;
+import com.taskflow.dominio.LimitesCampos;
 import com.taskflow.dominio.Papel;
-import com.taskflow.dominio.Tarefa;
 import com.taskflow.dominio.TarefaRepository;
 import com.taskflow.dominio.Usuario;
 import com.taskflow.dominio.UsuarioRepository;
+import com.taskflow.erro.CampoApi;
 import com.taskflow.erro.CodigoErroApi;
 import com.taskflow.erro.ErroDeAplicacao;
-import com.taskflow.erro.MensagensApi;
+import com.taskflow.erro.EventoLog;
+import com.taskflow.erro.RegistroEventos;
+import com.taskflow.validacao.Campos;
 import java.util.List;
-import java.util.Locale;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class MembroService {
 
-    private static final int MAXIMO_CARACTERES_EMAIL = 150;
-
     private final AcessoEquipe acesso;
     private final UsuarioRepository usuarioRepository;
     private final TarefaRepository tarefaRepository;
+    private final RegistroEventos registro;
 
     public MembroService(
             AcessoEquipe acesso,
             UsuarioRepository usuarioRepository,
-            TarefaRepository tarefaRepository) {
+            TarefaRepository tarefaRepository,
+            RegistroEventos registro) {
         this.acesso = acesso;
         this.usuarioRepository = usuarioRepository;
         this.tarefaRepository = tarefaRepository;
+        this.registro = registro;
     }
 
     @Transactional(readOnly = true)
@@ -44,20 +46,20 @@ public class MembroService {
     @Transactional
     public MembroResponse adicionar(long donoId, String emailInformado) {
         Usuario dono = acesso.exigirDono(donoId);
-        String email = Campos.emailObrigatorio(emailInformado, MensagensApi.CAMPO_EMAIL, MAXIMO_CARACTERES_EMAIL)
-                .toLowerCase(Locale.ROOT);
+        String email = Campos.emailObrigatorio(emailInformado, CampoApi.EMAIL, LimitesCampos.EMAIL);
         Usuario alvo = usuarioRepository.findByEmail(email)
                 .orElseThrow(() -> new ErroDeAplicacao(CodigoErroApi.USUARIO_NAO_ENCONTRADO));
         if (alvo.temEquipe()) {
             throw new ErroDeAplicacao(CodigoErroApi.USUARIO_JA_TEM_EQUIPE);
         }
         alvo.entrarNaEquipe(dono.getEquipe(), Papel.MEMBRO);
-        return MembroResponse.de(usuarioRepository.save(alvo));
+        registro.registrar(EventoLog.MEMBRO_ADICIONADO, dono.getId(), alvo.getId());
+        return MembroResponse.de(alvo);
     }
 
     /**
-     * Remove o membro da equipe e passa suas tarefas ao Dono, tudo na mesma transação.
-     * O usuário é atualizado primeiro; qualquer falha depois disso desfaz a remoção.
+     * Remove o membro da equipe e passa suas tarefas ao Dono, tudo na mesma transação:
+     * qualquer falha desfaz a remoção.
      */
     @Transactional
     public void remover(long donoId, long membroId) {
@@ -68,9 +70,7 @@ public class MembroService {
             throw new ErroDeAplicacao(CodigoErroApi.DONO_NAO_PODE_SER_REMOVIDO);
         }
         alvo.sairDaEquipe();
-        usuarioRepository.saveAndFlush(alvo);
-        List<Tarefa> tarefas = tarefaRepository.findByResponsavelId(alvo.getId());
-        tarefas.forEach(tarefa -> tarefa.atribuirA(dono));
-        tarefaRepository.saveAll(tarefas);
+        tarefaRepository.reatribuirResponsavel(alvo.getId(), dono);
+        registro.registrar(EventoLog.MEMBRO_REMOVIDO, dono.getId(), alvo.getId());
     }
 }

@@ -22,10 +22,10 @@ public class Usuario {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "nome", length = 100, nullable = false)
+    @Column(name = "nome", length = LimitesCampos.NOME_USUARIO, nullable = false)
     private String nome;
 
-    @Column(name = "email", length = 150, nullable = false, unique = true)
+    @Column(name = "email", length = LimitesCampos.EMAIL, nullable = false, unique = true)
     private String email;
 
     @Column(name = "senha_hash", length = 255, nullable = false)
@@ -92,9 +92,5 @@ public class Usuario {
 
     public Papel getPapel() {
         return papel;
-    }
-
-    public Instant getCriadoEm() {
-        return criadoEm;
     }
 }

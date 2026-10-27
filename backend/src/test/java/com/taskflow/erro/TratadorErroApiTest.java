@@ -1,5 +1,6 @@
 package com.taskflow.erro;
 
+import com.taskflow.auth.JwtService;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.not;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -10,8 +11,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import com.taskflow.auth.service.JwtService;
-import com.taskflow.dominio.UsuarioRepository;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
@@ -19,7 +18,7 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 @WebMvcTest(controllers = ControladorErroTeste.class)
-@Import({TratadorErroApi.class, LoggingCentralizado.class})
+@Import({TratadorErroApi.class, RegistroEventos.class})
 class TratadorErroApiTest {
 
     private static final String ERRO_TRATADO = "/teste/erros/tratado";
@@ -30,9 +29,6 @@ class TratadorErroApiTest {
 
     @MockitoBean
     private JwtService jwtService;
-
-    @MockitoBean
-    private UsuarioRepository usuarioRepository;
 
     @Test
     @DisplayName("HIST-001-fundacao/C03 - erro tratado responde com os campos do formato padrão")
@@ -56,6 +52,14 @@ class TratadorErroApiTest {
                 .andExpect(content().string(not(containsString("SQL_INTERNO_TESTE"))))
                 .andExpect(content().string(not(containsString("TOKEN_INTERNO_TESTE"))))
                 .andExpect(content().string(not(containsString("java.lang"))));
+    }
+
+    @Test
+    @DisplayName("Concorrência - conflito de versão responde 409 CONFLITO_CONCORRENCIA")
+    void conflitoDeVersaoResponde409() throws Exception {
+        mockMvc.perform(get("/teste/erros/concorrencia"))
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.codigo").value("CONFLITO_CONCORRENCIA"));
     }
 
     @Test
