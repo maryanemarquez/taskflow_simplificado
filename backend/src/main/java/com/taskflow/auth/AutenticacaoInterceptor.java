@@ -1,6 +1,5 @@
-package com.taskflow.auth.controller;
+package com.taskflow.auth;
 
-import com.taskflow.auth.service.JwtService;
 import com.taskflow.erro.CodigoErroApi;
 import com.taskflow.erro.ErroDeAplicacao;
 import jakarta.servlet.http.HttpServletRequest;

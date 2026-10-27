@@ -1,6 +1,7 @@
 package com.taskflow.equipe;
 
-import com.taskflow.auth.controller.UsuarioAutenticado;
+import com.taskflow.auth.UsuarioAutenticado;
+import com.taskflow.configuracao.Rotas;
 import java.util.List;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -13,7 +14,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/api/membros")
+@RequestMapping(Rotas.MEMBROS)
 public class MembroController {
 
     private final MembroService membroService;

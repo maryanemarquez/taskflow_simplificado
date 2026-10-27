@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.http.MediaType;
 import org.springframework.http.ProblemDetail;
 import org.springframework.http.ResponseEntity;
@@ -49,6 +50,11 @@ public class TratadorErroApi {
                 ? List.of()
                 : List.of(new ErroCampo(campo, CodigoErroCampo.INVALIDO));
         return criarResposta(CodigoErroApi.VALIDACAO, requisicao.getRequestURI(), erros);
+    }
+
+    @ExceptionHandler(OptimisticLockingFailureException.class)
+    public ResponseEntity<ProblemDetail> tratarConflitoDeConcorrencia(HttpServletRequest requisicao) {
+        return criarResposta(CodigoErroApi.CONFLITO_CONCORRENCIA, requisicao.getRequestURI(), List.of());
     }
 
     @ExceptionHandler(MethodArgumentTypeMismatchException.class)

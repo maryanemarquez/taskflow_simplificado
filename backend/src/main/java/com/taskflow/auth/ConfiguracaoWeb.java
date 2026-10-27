@@ -1,10 +1,9 @@
-package com.taskflow.auth.configuracao;
+package com.taskflow.auth;
 
-import com.taskflow.auth.controller.AutenticacaoInterceptor;
-import com.taskflow.auth.controller.RotasAuth;
-import com.taskflow.auth.controller.UsuarioAutenticadoResolver;
+import com.taskflow.configuracao.PropriedadesCors;
+import com.taskflow.configuracao.Rotas;
 import java.util.List;
-import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.method.support.HandlerMethodArgumentResolver;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
@@ -12,6 +11,7 @@ import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 @Configuration
+@EnableConfigurationProperties(PropriedadesCors.class)
 public class ConfiguracaoWeb implements WebMvcConfigurer {
 
     private final AutenticacaoInterceptor autenticacaoInterceptor;
@@ -21,17 +21,17 @@ public class ConfiguracaoWeb implements WebMvcConfigurer {
     public ConfiguracaoWeb(
             AutenticacaoInterceptor autenticacaoInterceptor,
             UsuarioAutenticadoResolver usuarioAutenticadoResolver,
-            @Value("${taskflow.cors.origem}") String origemPermitida) {
+            PropriedadesCors cors) {
         this.autenticacaoInterceptor = autenticacaoInterceptor;
         this.usuarioAutenticadoResolver = usuarioAutenticadoResolver;
-        this.origemPermitida = origemPermitida;
+        this.origemPermitida = cors.origem();
     }
 
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
         registry.addInterceptor(autenticacaoInterceptor)
-                .addPathPatterns(RotasAuth.PREFIXO_API + "/**")
-                .excludePathPatterns(RotasAuth.PREFIXO_AUTH + "/**");
+                .addPathPatterns(Rotas.PREFIXO_API + "/**")
+                .excludePathPatterns(Rotas.PREFIXO_AUTH + "/**");
     }
 
     @Override
@@ -41,7 +41,7 @@ public class ConfiguracaoWeb implements WebMvcConfigurer {
 
     @Override
     public void addCorsMappings(CorsRegistry registry) {
-        registry.addMapping(RotasAuth.PREFIXO_API + "/**")
+        registry.addMapping(Rotas.PREFIXO_API + "/**")
                 .allowedOrigins(origemPermitida)
                 .allowedMethods("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS")
                 .allowedHeaders("*");

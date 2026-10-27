@@ -1,4 +1,4 @@
-package com.taskflow.auth.controller;
+package com.taskflow.auth;
 
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;

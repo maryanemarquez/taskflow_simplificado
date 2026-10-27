@@ -34,6 +34,8 @@ public enum CodigoErroApi {
             "E-mail já cadastrado", "Já existe uma conta com este e-mail."),
     USUARIO_JA_TEM_EQUIPE(HttpStatus.CONFLICT,
             "Usuário já tem equipe", "Este usuário já pertence a uma equipe."),
+    CONFLITO_CONCORRENCIA(HttpStatus.CONFLICT,
+            "Conflito de edição", "O recurso foi alterado por outra requisição. Tente novamente."),
     ERRO_INTERNO(HttpStatus.INTERNAL_SERVER_ERROR,
             "Erro interno", "Ocorreu um erro inesperado.");
 

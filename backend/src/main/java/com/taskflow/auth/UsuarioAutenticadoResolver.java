@@ -1,4 +1,4 @@
-package com.taskflow.auth.controller;
+package com.taskflow.auth;
 
 import com.taskflow.erro.CodigoErroApi;
 import com.taskflow.erro.ErroDeAplicacao;

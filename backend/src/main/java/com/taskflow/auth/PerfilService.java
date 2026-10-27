@@ -1,6 +1,5 @@
-package com.taskflow.auth.service;
+package com.taskflow.auth;
 
-import com.taskflow.auth.dto.MeResponse;
 import com.taskflow.dominio.Usuario;
 import com.taskflow.equipe.AcessoEquipe;
 import org.springframework.stereotype.Service;

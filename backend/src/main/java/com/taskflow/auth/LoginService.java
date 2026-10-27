@@ -1,7 +1,5 @@
-package com.taskflow.auth.service;
+package com.taskflow.auth;
 
-import com.taskflow.auth.dto.LoginRequest;
-import com.taskflow.auth.dto.SessaoResponse;
 import com.taskflow.dominio.Usuario;
 import com.taskflow.dominio.UsuarioRepository;
 import com.taskflow.erro.CodigoErroApi;

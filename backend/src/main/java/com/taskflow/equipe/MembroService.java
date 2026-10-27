@@ -2,7 +2,6 @@ package com.taskflow.equipe;
 
 import com.taskflow.dominio.LimitesCampos;
 import com.taskflow.dominio.Papel;
-import com.taskflow.dominio.Tarefa;
 import com.taskflow.dominio.TarefaRepository;
 import com.taskflow.dominio.Usuario;
 import com.taskflow.dominio.UsuarioRepository;
@@ -71,8 +70,7 @@ public class MembroService {
             throw new ErroDeAplicacao(CodigoErroApi.DONO_NAO_PODE_SER_REMOVIDO);
         }
         alvo.sairDaEquipe();
-        List<Tarefa> tarefas = tarefaRepository.findByResponsavelId(alvo.getId());
-        tarefas.forEach(tarefa -> tarefa.atribuirA(dono));
+        tarefaRepository.reatribuirResponsavel(alvo.getId(), dono);
         registro.registrar(EventoLog.MEMBRO_REMOVIDO, dono.getId(), alvo.getId());
     }
 }

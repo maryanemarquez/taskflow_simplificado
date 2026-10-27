@@ -1,7 +1,5 @@
-package com.taskflow.auth.service;
+package com.taskflow.auth;
 
-import com.taskflow.auth.dto.CadastroRequest;
-import com.taskflow.auth.dto.SessaoResponse;
 import com.taskflow.dominio.Equipe;
 import com.taskflow.dominio.EquipeRepository;
 import com.taskflow.dominio.LimitesCampos;

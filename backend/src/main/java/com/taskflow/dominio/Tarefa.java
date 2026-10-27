@@ -12,6 +12,7 @@ import jakarta.persistence.Index;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import jakarta.persistence.Version;
 import java.time.Instant;
 import java.time.LocalDate;
 
@@ -53,6 +54,10 @@ public class Tarefa {
 
     @Column(name = "criado_em", nullable = false)
     private Instant criadoEm;
+
+    @Version
+    @Column(name = "versao", nullable = false)
+    private long versao;
 
     protected Tarefa() {
     }

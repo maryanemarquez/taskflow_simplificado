@@ -17,3 +17,8 @@ logging:
 taskflow:
   cors:
     origem: ${CORS_ORIGEM:http://localhost:8081}
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health
