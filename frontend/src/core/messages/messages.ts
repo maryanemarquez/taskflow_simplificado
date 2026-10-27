@@ -1,3 +1,5 @@
+const INVALID_DUE_DATE = 'Prazo inválido. Use uma data real no formato DD/MM/AAAA.';
+
 export const MESSAGES = {
   brand: 'TaskFlow',
   brandMark: 'T',
@@ -92,14 +94,12 @@ export const MESSAGES = {
     taskTitle: 'Título',
     description: 'Descrição',
     dueDate: 'Prazo',
-    dueDateInvalid: 'Prazo inválido. Use uma data real no formato DD/MM/AAAA.',
     assignee: 'Responsável',
     edit: 'Editar',
     remove: 'Remover',
     advance: 'Avançar',
     back: 'Voltar',
     dueOn: (date: string) => `Prazo: ${date}`,
-    assignedTo: (name: string) => `Responsável: ${name}`,
     titleRequired: 'Informe o título.',
     status: {
       PENDENTE: 'Pendente',
@@ -116,13 +116,13 @@ export const MESSAGES = {
     nextMonth: 'Próximo mês',
     clear: 'Remover prazo',
     past: 'Não é possível escolher uma data passada.',
-    invalid: 'Prazo inválido. Use uma data real no formato DD/MM/AAAA.',
+    invalid: INVALID_DUE_DATE,
     months: ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'],
     weekdays: ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'],
     fullDate: (day: number, month: string, year: number) => `${day} de ${month} de ${year}`,
   },
   fieldErrors: {
-    'prazo.INVALIDO': 'Prazo inválido. Use uma data real no formato DD/MM/AAAA.',
+    'prazo.INVALIDO': INVALID_DUE_DATE,
     'tipo.OBRIGATORIO': 'Escolha o tipo de conta.',
     'tipo.INVALIDO': 'Tipo de conta inválido.',
     'email.INVALIDO': 'Informe um e-mail válido.',

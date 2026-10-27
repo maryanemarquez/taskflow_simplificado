@@ -1,11 +1,9 @@
-import type { KnownOrUnknownErrorCode } from './apiContract';
+import { isServerError, type KnownOrUnknownErrorCode } from './apiContract';
 import { ApiRequestError, NetworkRequestError } from './httpErrors';
 import { queryClient } from './queryClient';
 import { QUERY_KEYS } from './queryKeys';
 import { logger, type LogContext } from '../log/logger';
 import { session } from '../session/session';
-
-const SERVER_ERROR_STATUS = 500;
 
 export interface RequestInfo {
   method?: string;
@@ -45,7 +43,7 @@ function applyApiErrorPolicy(error: ApiRequestError, request: RequestInfo) {
       logger.warn('ACESSO_NEGADO', context);
       break;
     default:
-      if ((error.status ?? 0) >= SERVER_ERROR_STATUS) {
+      if (isServerError(error.status)) {
         logger.error('API_ERRO_SERVIDOR', context);
       }
   }

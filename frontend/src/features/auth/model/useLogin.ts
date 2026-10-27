@@ -13,7 +13,7 @@ export function useLogin() {
   const [form, setForm] = useState<LoginPayload>({ email: '', senha: '' });
   const queryClient = useQueryClient();
   const mutation = useMutation({
-    mutationFn: (input: Parameters<typeof authApi.login>[0]) => authApi.login(input),
+    mutationFn: (input: LoginPayload) => authApi.login(input),
     onSuccess: (response) => {
       queryClient.clear();
       session.setToken(response.accessToken);

@@ -5,7 +5,7 @@ import { ApiRequestError, errorMessage, fieldMessages } from '../../../core/api/
 import { MESSAGES } from '../../../core/messages/messages';
 import { session } from '../../../core/session/session';
 import { authApi } from '../api/authApi';
-import type { AccountType, RegistrationForm } from './authTypes';
+import type { AccountType, RegistrationForm, RegistrationPayload } from './authTypes';
 import { validateRegistration, type RegistrationErrors, type RegistrationField } from './registrationValidation';
 
 const EMPTY_FORM: RegistrationForm = { nome: '', email: '', senha: '', tipo: null };
@@ -33,7 +33,7 @@ export function useRegistration() {
   const [banner, setBanner] = useState<string | null>(null);
   const queryClient = useQueryClient();
   const mutation = useMutation({
-    mutationFn: (input: Parameters<typeof authApi.register>[0]) => authApi.register(input),
+    mutationFn: (input: RegistrationPayload) => authApi.register(input),
     onSuccess: (response) => {
       queryClient.clear();
       session.setToken(response.accessToken);

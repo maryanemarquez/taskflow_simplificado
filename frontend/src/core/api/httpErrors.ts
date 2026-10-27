@@ -1,7 +1,5 @@
 import { MESSAGES } from '../messages/messages';
-import { toErrorCode, type ApiFieldError, type ApiProblem, type KnownOrUnknownErrorCode } from './apiContract';
-
-const SERVER_ERROR_STATUS = 500;
+import { isServerError, toErrorCode, type ApiFieldError, type ApiProblem, type KnownOrUnknownErrorCode } from './apiContract';
 
 interface ErrorMeta {
   status?: number;
@@ -51,7 +49,7 @@ function fieldMessage(field: ApiFieldError): string | undefined {
 
 /** Falha do servidor: anexa o id de correlação, para o suporte achar a requisição nos logs. */
 function withSupportCode(text: string, error: ApiRequestError): string {
-  const isServerFault = error.codigo === 'ERRO_INTERNO' || (error.status ?? 0) >= SERVER_ERROR_STATUS;
+  const isServerFault = error.codigo === 'ERRO_INTERNO' || isServerError(error.status);
   return isServerFault && error.requestId ? `${text} ${MESSAGES.errors.supportCode(error.requestId)}` : text;
 }
 

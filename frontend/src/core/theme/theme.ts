@@ -12,23 +12,13 @@ export const theme = {
     destructive: 'hsl(4, 69%, 49%)',
     destructiveSoft: 'hsla(4, 69%, 49%, 0.05)',
     destructiveBorder: 'hsla(4, 69%, 49%, 0.2)',
-    success: 'hsl(157, 52%, 33%)',
-    warning: 'hsl(34, 76%, 39%)',
-    info: 'hsl(211, 62%, 47%)',
     status: {
       pending: 'hsl(32, 78%, 40%)',
       pendingSoft: 'hsl(40, 90%, 95%)',
       development: 'hsl(212, 62%, 47%)',
       developmentSoft: 'hsl(210, 80%, 96%)',
-      testing: 'hsl(276, 42%, 46%)',
-      testingSoft: 'hsl(276, 50%, 96%)',
       done: 'hsl(157, 52%, 33%)',
       doneSoft: 'hsl(155, 45%, 95%)',
-    },
-    priority: {
-      low: 'hsl(212, 62%, 47%)',
-      medium: 'hsl(32, 78%, 40%)',
-      high: 'hsl(4, 69%, 49%)',
     },
   },
   spacing: {
@@ -83,7 +73,5 @@ export const theme = {
   },
   breakpoints: {
     mobile: 767,
-    tablet: 900,
-    desktop: 1100,
   },
 } as const;

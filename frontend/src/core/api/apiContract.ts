@@ -42,6 +42,13 @@ export interface ApiProblem {
   erros?: ApiFieldError[];
 }
 
+const SERVER_ERROR_STATUS = 500;
+
+/** Status HTTP de falha do servidor (500 ou mais). */
+export function isServerError(status: number | undefined): boolean {
+  return (status ?? 0) >= SERVER_ERROR_STATUS;
+}
+
 export function toErrorCode(value: unknown): KnownOrUnknownErrorCode {
   return API_ERROR_CODES.find((code) => code === value) ?? UNKNOWN_ERROR_CODE;
 }

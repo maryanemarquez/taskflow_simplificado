@@ -5,7 +5,6 @@ import { theme } from '../../../core/theme/theme';
 import { useViewport } from '../../../core/theme/useViewport';
 import { Icon } from '../../../core/ui/Icon';
 import {
-  addMonths,
   fromIso,
   isPast,
   isSegmentsComplete,
@@ -159,7 +158,7 @@ function DatePopover({ anchor, value, originalValue, onChange, onClose }: DatePo
           <CalendarGrid
             cellSize={Math.floor((width - theme.spacing.large * 2) / 7)}
             onSelect={pick}
-            onViewChange={(next) => setView(addMonths(next, 0))}
+            onViewChange={setView}
             selected={selected}
             today={today}
             view={view}
