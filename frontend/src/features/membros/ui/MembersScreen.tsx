@@ -6,6 +6,7 @@ import { Avatar } from '../../../core/ui/Avatar';
 import { Badge } from '../../../core/ui/Badge';
 import { EmptyState } from '../../../core/ui/EmptyState';
 import { Icon } from '../../../core/ui/Icon';
+import { QueryStatus } from '../../../core/ui/LoadError';
 import type { CurrentUser } from '../../auth/model/authTypes';
 import { ErrorNotice } from '../../auth/ui/ErrorNotice';
 import { PrimaryButton } from '../../auth/ui/PrimaryButton';
@@ -21,9 +22,16 @@ export function MembersScreen({ user }: { user: CurrentUser }) {
     <View style={styles.page}>
       <View style={styles.heading}>
         <Text accessibilityRole="header" style={styles.title}>{MESSAGES.members.title}</Text>
-        <Text style={styles.subtitle}>{MESSAGES.members.subtitle(list.length)}</Text>
+        {members.data ? <Text style={styles.subtitle}>{MESSAGES.members.subtitle(list.length)}</Text> : null}
       </View>
-      {members.data && list.length === 0 ? (
+      <QueryStatus
+        data={members.data}
+        error={members.error}
+        fallback={MESSAGES.members.loadError}
+        isError={members.isError}
+        onRetry={() => void members.refetch()}
+      />
+      {!members.data ? null : list.length === 0 ? (
         <EmptyState icon="users" title={MESSAGES.members.empty} />
       ) : (
         <View style={styles.table}>

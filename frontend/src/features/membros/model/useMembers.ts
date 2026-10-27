@@ -1,8 +1,7 @@
 import { useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { isStaleDataError } from '../../../core/api/errorPolicy';
-import { errorMessage } from '../../../core/api/httpErrors';
 import { QUERY_KEYS } from '../../../core/api/queryKeys';
+import { useActionFeedback } from '../../../core/api/useActionFeedback';
 import { MESSAGES } from '../../../core/messages/messages';
 import { membrosApi } from '../api/membrosApi';
 
@@ -14,7 +13,6 @@ export function useMembers() {
 export function useMemberActions() {
   const queryClient = useQueryClient();
   const [email, setEmail] = useState('');
-  const [message, setMessage] = useState<string | null>(null);
 
   // Remover um membro reatribui as tarefas dele ao Dono: membros, tarefas e dashboard mudam juntos.
   const reload = () => {
@@ -22,11 +20,11 @@ export function useMemberActions() {
     void queryClient.invalidateQueries({ queryKey: QUERY_KEYS.tasks });
     void queryClient.invalidateQueries({ queryKey: QUERY_KEYS.dashboard });
   };
+  const feedback = useActionFeedback({ onStale: reload });
   const onChanged = () => {
-    setMessage(null);
+    feedback.clear();
     reload();
   };
-  const showError = (error: unknown) => setMessage(errorMessage(error, MESSAGES.errors.generic));
 
   const addMutation = useMutation({
     mutationFn: (value: string) => membrosApi.add(value),
@@ -34,18 +32,14 @@ export function useMemberActions() {
       setEmail('');
       onChanged();
     },
-    onError: showError,
+    // E-mail inexistente ou já em outra equipe: a lista na tela continua válida, não há o que recarregar.
+    onError: (error) => feedback.handleError(error, { refreshStale: false }),
   });
   const removeMutation = useMutation({
     mutationFn: (id: number) => membrosApi.remove(id),
     onSuccess: onChanged,
-    onError: (error) => {
-      showError(error);
-      // Membro já removido por outra pessoa, ou permissão alterada: a lista na tela está velha.
-      if (isStaleDataError(error)) {
-        reload();
-      }
-    },
+    // Membro já removido por outra pessoa, ou permissão alterada: a lista na tela está velha.
+    onError: (error) => feedback.handleError(error),
   });
 
   const isAdding = addMutation.isPending;
@@ -56,7 +50,7 @@ export function useMemberActions() {
       return;
     }
     if (!email.trim()) {
-      setMessage(MESSAGES.members.emailRequired);
+      feedback.showMessage(MESSAGES.members.emailRequired);
       return;
     }
     addMutation.mutate(email.trim());
@@ -66,5 +60,5 @@ export function useMemberActions() {
       removeMutation.mutate(id);
     }
   };
-  return { email, setEmail, message, isAdding, removingId, add, remove };
+  return { email, setEmail, message: feedback.message, isAdding, removingId, add, remove };
 }

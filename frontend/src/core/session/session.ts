@@ -1,4 +1,5 @@
 import { useSyncExternalStore } from 'react';
+import { sessionNotice } from './sessionNotice';
 
 const TOKEN_KEY = 'taskflow-token';
 const listeners = new Set<() => void>();
@@ -29,7 +30,10 @@ function setStoredToken(value: string | null) {
 
 export const session = {
   getToken: () => currentToken,
-  setToken: (value: string) => setStoredToken(value),
+  setToken: (value: string) => {
+    sessionNotice.clear();
+    setStoredToken(value);
+  },
   clear: () => setStoredToken(null),
   subscribe: (listener: () => void) => {
     listeners.add(listener);

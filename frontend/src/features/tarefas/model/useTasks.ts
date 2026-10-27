@@ -1,10 +1,10 @@
-import { useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { isStaleDataError } from '../../../core/api/errorPolicy';
-import { errorMessage } from '../../../core/api/httpErrors';
+import { useActionFeedback } from '../../../core/api/useActionFeedback';
 import { QUERY_KEYS } from '../../../core/api/queryKeys';
-import { MESSAGES } from '../../../core/messages/messages';
 import { tarefasApi, type TaskInput, type TaskStatus } from '../api/tarefasApi';
+
+/** Campos do formulário de tarefa que mostram o erro da API ao lado do próprio campo. */
+const TASK_FORM_FIELDS = ['titulo', 'descricao', 'prazo', 'responsavelId'] as const;
 
 export function useTasks() {
   return useQuery({ queryKey: QUERY_KEYS.tasks, queryFn: tarefasApi.list });
@@ -17,23 +17,18 @@ export function useTasks() {
  */
 export function useTaskActions(onDone: () => void) {
   const queryClient = useQueryClient();
-  const [message, setMessage] = useState<string | null>(null);
 
   const reload = () => {
     void queryClient.invalidateQueries({ queryKey: QUERY_KEYS.tasks });
     void queryClient.invalidateQueries({ queryKey: QUERY_KEYS.dashboard });
   };
+  // Tarefa removida ou alterada por outra pessoa: a tela mostra dados velhos, então recarrega a lista.
+  const feedback = useActionFeedback({ fields: TASK_FORM_FIELDS, onStale: reload });
   const onChanged = () => {
-    setMessage(null);
+    feedback.clear();
     reload();
   };
-  const onError = (error: unknown) => {
-    setMessage(errorMessage(error, MESSAGES.errors.generic));
-    // Tarefa removida ou alterada por outra pessoa: a tela mostra dados velhos, então recarrega a lista.
-    if (isStaleDataError(error)) {
-      reload();
-    }
-  };
+  const onError = (error: unknown) => feedback.handleError(error);
 
   const create = useMutation({
     mutationFn: (input: TaskInput) => tarefasApi.create(input),
@@ -64,17 +59,20 @@ export function useTaskActions(onDone: () => void) {
     (status.isPending && status.variables?.id === id) || (remove.isPending && remove.variables === id);
 
   return {
-    message,
-    clearMessage: () => setMessage(null),
+    message: feedback.message,
+    fieldErrors: feedback.fieldErrors,
+    clearMessage: feedback.clear,
     isSaving,
     isTaskBusy,
     create: (input: TaskInput) => {
       if (!isSaving) {
+        feedback.clear();
         create.mutate(input);
       }
     },
     update: (id: number, input: TaskInput) => {
       if (!isSaving) {
+        feedback.clear();
         update.mutate({ id, input });
       }
     },

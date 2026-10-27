@@ -23,6 +23,8 @@ interface DatePickerFieldProps {
   value: string | null;
   /** Prazo que a tarefa já tinha ao abrir a edição; pode ser mantido mesmo que já tenha passado. */
   originalValue: string | null;
+  /** Erro da API para o prazo, mostrado abaixo do campo. */
+  error?: string;
   onChange: (value: string | null) => void;
 }
 
@@ -50,7 +52,7 @@ function segmentsOf(date: Ymd | null): DateSegments {
   return { day, month, year };
 }
 
-export function DatePickerField({ value, originalValue, onChange }: DatePickerFieldProps) {
+export function DatePickerField({ value, originalValue, error, onChange }: DatePickerFieldProps) {
   const [open, setOpen] = useState(false);
   const [anchor, setAnchor] = useState<Anchor | null>(null);
   const fieldRef = useRef<Measurable | null>(null);
@@ -80,6 +82,7 @@ export function DatePickerField({ value, originalValue, onChange }: DatePickerFi
           </Pressable>
         ) : null}
       </View>
+      {error ? <Text accessibilityRole="alert" style={styles.fieldError}>{error}</Text> : null}
       {open ? (
         <DatePopover
           anchor={anchor}
@@ -185,6 +188,7 @@ const styles = StyleSheet.create({
   value: { color: theme.colors.text, fontFamily: theme.typography.regular, fontSize: theme.typography.body },
   placeholder: { color: theme.colors.textSecondary },
   clear: { alignItems: 'center', height: '100%', justifyContent: 'center', paddingHorizontal: theme.spacing.medium },
+  fieldError: { color: theme.colors.destructive, fontFamily: theme.typography.regular, fontSize: theme.typography.label },
   layer: { flex: 1 },
   backdrop: { ...(StyleSheet.absoluteFill as object) },
   popover: {

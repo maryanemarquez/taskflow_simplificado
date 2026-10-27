@@ -276,3 +276,72 @@ it('FASE2-C10 - tarefa que mudou no servidor recarrega a lista', async () => {
 
   await waitFor(() => expect(tarefasApi.list).toHaveBeenCalledTimes(2));
 });
+
+const validationProblem = (campo: string, codigo: string) => ({
+  codigo: 'VALIDACAO',
+  mensagem: 'Um ou mais campos são inválidos.',
+  erros: [{ campo, codigo, mensagem: 'Mensagem genérica do servidor.' }],
+});
+
+it('FASE2-E5 - erro de título vindo da API aparece no campo, sem banner', async () => {
+  jest.mocked(tarefasApi.create).mockRejectedValue(new ApiRequestError(validationProblem('titulo', 'TAMANHO_EXCEDIDO')));
+  renderWithClient(<TasksScreen user={OWNER} />);
+  await screen.findByText('Do dono');
+
+  fireEvent.press(screen.getByRole('button', { name: 'Nova tarefa' }));
+  fireEvent.changeText(screen.getByLabelText('Título'), 'Revisar');
+  fireEvent.press(screen.getByRole('button', { name: 'Salvar' }));
+
+  expect(await screen.findByText('O título pode ter no máximo 150 caracteres.')).toBeTruthy();
+  expect(screen.getAllByRole('alert')).toHaveLength(1);
+});
+
+it('FASE2-E5 - erros de descrição e de responsável aparecem cada um no seu campo', async () => {
+  jest.mocked(tarefasApi.create).mockRejectedValue(
+    new ApiRequestError({
+      codigo: 'VALIDACAO',
+      mensagem: 'Um ou mais campos são inválidos.',
+      erros: [
+        { campo: 'descricao', codigo: 'TAMANHO_EXCEDIDO', mensagem: 'x' },
+        { campo: 'responsavelId', codigo: 'INVALIDO', mensagem: 'y' },
+      ],
+    }),
+  );
+  renderWithClient(<TasksScreen user={OWNER} />);
+  await screen.findByText('Do dono');
+
+  fireEvent.press(screen.getByRole('button', { name: 'Nova tarefa' }));
+  fireEvent.changeText(screen.getByLabelText('Título'), 'Revisar');
+  fireEvent.press(screen.getByRole('button', { name: 'Salvar' }));
+
+  expect(await screen.findByText('A descrição pode ter no máximo 2000 caracteres.')).toBeTruthy();
+  expect(screen.getByText('Escolha um responsável da sua equipe.')).toBeTruthy();
+});
+
+it('FASE2-E5 - o erro por campo some quando a pessoa tenta salvar de novo', async () => {
+  jest
+    .mocked(tarefasApi.create)
+    .mockRejectedValueOnce(new ApiRequestError(validationProblem('titulo', 'TAMANHO_EXCEDIDO')))
+    .mockImplementation(() => new Promise<never>(() => undefined));
+  renderWithClient(<TasksScreen user={OWNER} />);
+  await screen.findByText('Do dono');
+
+  fireEvent.press(screen.getByRole('button', { name: 'Nova tarefa' }));
+  fireEvent.changeText(screen.getByLabelText('Título'), 'Revisar');
+  fireEvent.press(screen.getByRole('button', { name: 'Salvar' }));
+  await screen.findByText('O título pode ter no máximo 150 caracteres.');
+
+  fireEvent.press(screen.getByRole('button', { name: 'Salvar' }));
+
+  await waitFor(() => expect(screen.queryByText('O título pode ter no máximo 150 caracteres.')).toBeNull());
+});
+
+it('FASE2-E5 - erro de campo que o formulário não tem vira mensagem única', async () => {
+  jest.mocked(tarefasApi.changeStatus).mockRejectedValue(new ApiRequestError(validationProblem('status', 'INVALIDO')));
+  renderWithClient(<TasksScreen user={OWNER} />);
+  await screen.findByText('Do dono');
+
+  fireEvent.press(screen.getAllByRole('button', { name: 'Avançar' })[0]);
+
+  expect(await screen.findByText('Mensagem genérica do servidor.')).toBeTruthy();
+});

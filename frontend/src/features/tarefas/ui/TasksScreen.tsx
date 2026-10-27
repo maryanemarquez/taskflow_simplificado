@@ -4,6 +4,7 @@ import { MESSAGES } from '../../../core/messages/messages';
 import { theme } from '../../../core/theme/theme';
 import { EmptyState } from '../../../core/ui/EmptyState';
 import { Icon, type IconName } from '../../../core/ui/Icon';
+import { QueryStatus } from '../../../core/ui/LoadError';
 import { Modal } from '../../../core/ui/Modal';
 import type { CurrentUser } from '../../auth/model/authTypes';
 import { ErrorNotice } from '../../auth/ui/ErrorNotice';
@@ -57,7 +58,7 @@ export function TasksScreen({ user }: { user: CurrentUser }) {
       <View style={styles.header}>
         <View style={styles.heading}>
           <Text accessibilityRole="header" style={styles.title}>{MESSAGES.tasks.title}</Text>
-          <Text style={styles.subtitle}>{MESSAGES.tasks.subtitle(items.length)}</Text>
+          {tasks.data ? <Text style={styles.subtitle}>{MESSAGES.tasks.subtitle(items.length)}</Text> : null}
         </View>
         <NewTaskButton onPress={() => openEditor('new')} />
       </View>
@@ -79,7 +80,14 @@ export function TasksScreen({ user }: { user: CurrentUser }) {
         })}
       </View>
       {!editing && actions.message ? <ErrorNotice message={actions.message} /> : null}
-      {tasks.data && items.length === 0 ? (
+      <QueryStatus
+        data={tasks.data}
+        error={tasks.error}
+        fallback={MESSAGES.tasks.loadError}
+        isError={tasks.isError}
+        onRetry={() => void tasks.refetch()}
+      />
+      {!tasks.data ? null : items.length === 0 ? (
         <EmptyState icon="folder" text={MESSAGES.tasks.emptyText} title={MESSAGES.tasks.emptyTitle}>
           <NewTaskButton onPress={() => openEditor('new')} />
         </EmptyState>
@@ -96,6 +104,7 @@ export function TasksScreen({ user }: { user: CurrentUser }) {
           <TaskForm
             key={task?.id ?? 'new'}
             members={isOwner(user) ? (members.data ?? []) : null}
+            fieldErrors={actions.fieldErrors}
             message={actions.message}
             onCancel={closeEditor}
             onSubmit={save}

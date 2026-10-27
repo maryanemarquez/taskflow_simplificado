@@ -2,6 +2,7 @@ import axios, { isAxiosError, isCancel, type InternalAxiosRequestConfig } from '
 import { REQUEST_ID_HEADER, UNKNOWN_ERROR_CODE, isApiProblem } from './apiContract';
 import { applyErrorPolicy, type RequestInfo } from './errorPolicy';
 import { ApiRequestError, NetworkRequestError } from './httpErrors';
+import { newRequestId } from './requestId';
 import { env } from '../config/env';
 import { MESSAGES } from '../messages/messages';
 import { session } from '../session/session';
@@ -16,11 +17,6 @@ export const httpClient = axios.create({
   timeout: REQUEST_TIMEOUT_MS,
   headers: { 'Content-Type': 'application/json' },
 });
-
-/** O backend reaproveita o id enviado; assim ele existe mesmo quando não há resposta (rede, tempo esgotado). */
-function newRequestId(): string | undefined {
-  return globalThis.crypto?.randomUUID?.();
-}
 
 function headerText(headers: unknown, name: string): string | undefined {
   const reader = headers as { get?: (header: string) => unknown } | undefined;
@@ -57,10 +53,8 @@ httpClient.interceptors.request.use((config) => {
   if (token) {
     config.headers.set(AUTHORIZATION_HEADER, `${BEARER_PREFIX}${token}`);
   }
-  const requestId = newRequestId();
-  if (requestId) {
-    config.headers.set(REQUEST_ID_HEADER, requestId);
-  }
+  // O backend reaproveita o id enviado; assim ele existe mesmo quando não há resposta (rede, tempo esgotado).
+  config.headers.set(REQUEST_ID_HEADER, newRequestId());
   return config;
 });
 

@@ -4,6 +4,7 @@ import { queryClient } from './queryClient';
 import { QUERY_KEYS } from './queryKeys';
 import { logger, type LogContext } from '../log/logger';
 import { session } from '../session/session';
+import { sessionNotice } from '../session/sessionNotice';
 
 export interface RequestInfo {
   method?: string;
@@ -30,6 +31,7 @@ function applyApiErrorPolicy(error: ApiRequestError, request: RequestInfo) {
       // Só `NAO_AUTENTICADO` encerra a sessão; `CREDENCIAIS_INVALIDAS` (também 401) é erro de login.
       if (session.getToken()) {
         session.clear();
+        sessionNotice.markExpired();
         queryClient.clear();
         logger.warn('SESSAO_EXPIRADA', context);
       }

@@ -13,6 +13,8 @@ interface TaskFormProps {
   task: Task | null;
   members: Member[] | null;
   message: string | null;
+  /** Erros da API por campo (`titulo`, `descricao`, `prazo`, `responsavelId`), mostrados junto de cada campo. */
+  fieldErrors?: Record<string, string>;
   /** Salvando: bloqueia novo envio (clique duplo) e o cancelamento. */
   submitting?: boolean;
   onSubmit: (input: TaskInput) => void;
@@ -20,7 +22,7 @@ interface TaskFormProps {
 }
 
 /** `members` só é informado ao Dono, que pode escolher o responsável. */
-export function TaskForm({ task, members, message, submitting = false, onSubmit, onCancel }: TaskFormProps) {
+export function TaskForm({ task, members, message, fieldErrors = {}, submitting = false, onSubmit, onCancel }: TaskFormProps) {
   const [title, setTitle] = useState(task?.titulo ?? '');
   const [description, setDescription] = useState(task?.descricao ?? '');
   const [dueDate, setDueDate] = useState<string | null>(task?.prazo ?? null);
@@ -43,9 +45,9 @@ export function TaskForm({ task, members, message, submitting = false, onSubmit,
 
   return (
     <View style={styles.form}>
-      <AuthField field={{ label: MESSAGES.tasks.taskTitle, value: title, onChangeText: setTitle, autoCapitalize: 'sentences' }} />
-      <AuthField field={{ label: MESSAGES.tasks.description, value: description, onChangeText: setDescription, autoCapitalize: 'sentences' }} />
-      <DatePickerField onChange={setDueDate} originalValue={task?.prazo ?? null} value={dueDate} />
+      <AuthField field={{ label: MESSAGES.tasks.taskTitle, value: title, onChangeText: setTitle, error: fieldErrors.titulo, autoCapitalize: 'sentences' }} />
+      <AuthField field={{ label: MESSAGES.tasks.description, value: description, onChangeText: setDescription, error: fieldErrors.descricao, autoCapitalize: 'sentences' }} />
+      <DatePickerField error={fieldErrors.prazo} onChange={setDueDate} originalValue={task?.prazo ?? null} value={dueDate} />
       {members ? (
         <View style={styles.assigneeField}>
           <Text style={styles.label}>{MESSAGES.tasks.assignee}</Text>
@@ -62,6 +64,7 @@ export function TaskForm({ task, members, message, submitting = false, onSubmit,
             </Pressable>
           ))}
           </View>
+          {fieldErrors.responsavelId ? <Text accessibilityRole="alert" style={styles.error}>{fieldErrors.responsavelId}</Text> : null}
         </View>
       ) : null}
       {error || message ? <ErrorNotice message={error ?? message ?? ''} /> : null}
@@ -108,6 +111,7 @@ const styles = StyleSheet.create({
   },
   cancelDisabled: { opacity: theme.states.disabledOpacity },
   label: { color: theme.colors.text, fontFamily: theme.typography.semibold, fontSize: theme.typography.label },
+  error: { color: theme.colors.destructive, fontFamily: theme.typography.regular, fontSize: theme.typography.label },
   option: { color: theme.colors.textSecondary, fontFamily: theme.typography.regular },
   selected: { color: theme.colors.primary, fontFamily: theme.typography.bold },
   cancel: { color: theme.colors.text, fontFamily: theme.typography.semibold, textAlign: 'center' },
