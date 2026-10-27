@@ -1,13 +1,17 @@
 import type { ReactNode } from 'react';
-import type { CurrentUser } from '../../auth/model/authTypes';
+import { SessionUserProvider } from '../../auth/model/SessionUserContext';
 import { AppShell } from './AppShell';
 import { SessionGate } from './SessionGate';
 
-interface ProtectedProps {
-  children: (user: CurrentUser) => ReactNode;
-}
-
-/** Exige sessão e equipe: sem token vai ao login; sem equipe vai à tela "Sem equipe". */
-export function Protected({ children }: ProtectedProps) {
-  return <SessionGate ready={(user) => <AppShell user={user}>{children(user)}</AppShell>} />;
+/** Exige sessão e equipe: sem token vai ao login; sem equipe vai à tela "Sem equipe". Os filhos leem o usuário com `useSessionUser`. */
+export function Protected({ children }: { children: ReactNode }) {
+  return (
+    <SessionGate
+      ready={(user) => (
+        <SessionUserProvider user={user}>
+          <AppShell user={user}>{children}</AppShell>
+        </SessionUserProvider>
+      )}
+    />
+  );
 }

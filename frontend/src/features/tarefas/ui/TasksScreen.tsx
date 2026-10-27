@@ -54,6 +54,17 @@ export function TasksScreen({ user }: { user: CurrentUser }) {
   };
   const board = { isTaskBusy: actions.isTaskBusy, onChangeStatus: actions.changeStatus, onEdit: openEditor, onRemove: actions.remove };
 
+  const renderItems = () => {
+    if (items.length === 0) {
+      return (
+        <EmptyState icon="folder" text={MESSAGES.tasks.emptyText} title={MESSAGES.tasks.emptyTitle}>
+          <NewTaskButton onPress={() => openEditor('new')} />
+        </EmptyState>
+      );
+    }
+    return view === 'KANBAN' ? <KanbanBoard tasks={items} user={user} {...board} /> : <TaskList tasks={items} user={user} {...board} />;
+  };
+
   return (
     <View style={styles.page}>
       <View style={styles.header}>
@@ -85,15 +96,7 @@ export function TasksScreen({ user }: { user: CurrentUser }) {
         isError={tasks.isError}
         onRetry={() => void tasks.refetch()}
       />
-      {!tasks.data ? null : items.length === 0 ? (
-        <EmptyState icon="folder" text={MESSAGES.tasks.emptyText} title={MESSAGES.tasks.emptyTitle}>
-          <NewTaskButton onPress={() => openEditor('new')} />
-        </EmptyState>
-      ) : view === 'KANBAN' ? (
-        <KanbanBoard tasks={items} user={user} {...board} />
-      ) : (
-        <TaskList tasks={items} user={user} {...board} />
-      )}
+      {tasks.data ? renderItems() : null}
       {editing ? (
         <Modal
           onClose={closeEditor}

@@ -4,6 +4,7 @@ import type { CurrentUser } from '../../auth/model/authTypes';
 import { MESSAGES } from '../../../core/messages/messages';
 import { theme } from '../../../core/theme/theme';
 import { useViewport } from '../../../core/theme/useViewport';
+import { absoluteFillStyle } from '../../../core/ui/overlayStyles';
 import { Sidebar } from './Sidebar';
 import { Topbar } from './Topbar';
 
@@ -52,6 +53,6 @@ const styles = StyleSheet.create({
     width: '100%',
   },
   contentMobile: { padding: theme.spacing.large },
-  drawer: { ...StyleSheet.absoluteFill as object, flexDirection: 'row', zIndex: 10 },
-  backdrop: { ...StyleSheet.absoluteFill as object, backgroundColor: theme.colors.overlay },
+  drawer: { ...absoluteFillStyle, flexDirection: 'row', zIndex: 10 },
+  backdrop: { ...absoluteFillStyle, backgroundColor: theme.colors.overlay },
 });

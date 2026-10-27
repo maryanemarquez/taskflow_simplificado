@@ -1,4 +1,5 @@
 import { useEffect, useRef, type ReactNode } from 'react';
+import { hostRef } from '../../../core/ui/webRef';
 import { View, type StyleProp, type ViewStyle } from 'react-native';
 
 /** Subconjunto do DOM que usamos: no navegador o `View` do React Native Web é um elemento HTML. */
@@ -56,7 +57,7 @@ export function Draggable({ enabled, onDragStart, onDragEnd, style, children }: 
   }, [enabled]);
 
   return (
-    <View ref={ref as never} style={style}>
+    <View ref={hostRef(ref)} style={style}>
       {children}
     </View>
   );
@@ -106,7 +107,7 @@ export function DropZone({ onEnter, onLeave, onDrop, style, children }: DropZone
   }, []);
 
   return (
-    <View ref={ref as never} style={style}>
+    <View ref={hostRef(ref)} style={style}>
       {children}
     </View>
   );

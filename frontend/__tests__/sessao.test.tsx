@@ -5,6 +5,7 @@ import { router } from 'expo-router';
 import { NetworkRequestError } from '../src/core/api/httpErrors';
 import { session } from '../src/core/session/session';
 import { Protected } from '../src/features/shell/ui/Protected';
+import { useSessionUser } from '../src/features/auth/model/SessionUserContext';
 import { authApi } from '../src/features/auth/api/authApi';
 import { renderWithClient, MEMBER, OWNER, WITHOUT_TEAM } from './testUtils';
 
@@ -20,8 +21,17 @@ jest.mock('../src/features/auth/api/authApi', () => ({
   authApi: { register: jest.fn(), login: jest.fn(), currentUser: jest.fn() },
 }));
 
+function ProtectedContent() {
+  const user = useSessionUser();
+  return <Text>{`conteudo de ${user.usuario.nome}`}</Text>;
+}
+
 const renderProtected = () =>
-  renderWithClient(<Protected>{(user) => <Text>{`conteudo de ${user.usuario.nome}`}</Text>}</Protected>);
+  renderWithClient(
+    <Protected>
+      <ProtectedContent />
+    </Protected>,
+  );
 
 beforeEach(() => {
   jest.resetAllMocks();
