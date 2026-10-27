@@ -1,6 +1,7 @@
 import { StyleSheet, Text, View } from 'react-native';
 import { MESSAGES } from '../../../core/messages/messages';
 import { theme } from '../../../core/theme/theme';
+import { CountBadge } from '../../../core/ui/CountBadge';
 import { Icon } from '../../../core/ui/Icon';
 import type { CurrentUser } from '../../auth/model/authTypes';
 import type { Task } from '../api/tarefasApi';
@@ -26,7 +27,7 @@ export function TaskList({ tasks, user, isTaskBusy, onChangeStatus, onEdit, onRe
             <View style={styles.groupHeader}>
               <Icon color={meta.color} name={meta.icon} size={16} />
               <Text style={styles.groupTitle}>{MESSAGES.tasks.status[status]}</Text>
-              <Text style={styles.count}>{group.length}</Text>
+              <CountBadge value={group.length} />
             </View>
             <View style={styles.panel}>
               {group.length === 0 ? <Text style={styles.empty}>{MESSAGES.tasks.empty}</Text> : null}
@@ -54,17 +55,7 @@ const styles = StyleSheet.create({
   list: { gap: theme.spacing.xlarge },
   group: { gap: theme.spacing.medium },
   groupHeader: { alignItems: 'center', flexDirection: 'row', gap: theme.spacing.small },
-  groupTitle: { color: theme.colors.text, fontFamily: theme.typography.bold, fontSize: theme.typography.body + 1 },
-  count: {
-    backgroundColor: theme.colors.border,
-    borderRadius: theme.radii.pill,
-    color: theme.colors.textSecondary,
-    fontFamily: theme.typography.semibold,
-    fontSize: theme.typography.caption,
-    overflow: 'hidden',
-    paddingHorizontal: theme.spacing.small,
-    paddingVertical: 2,
-  },
+  groupTitle: { color: theme.colors.text, fontFamily: theme.typography.bold, fontSize: theme.typography.bodyLarge },
   panel: {
     backgroundColor: theme.colors.surface,
     borderColor: theme.colors.border,

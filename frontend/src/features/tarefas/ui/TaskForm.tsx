@@ -2,12 +2,15 @@ import { useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { MESSAGES } from '../../../core/messages/messages';
 import { theme } from '../../../core/theme/theme';
+import { formStyles } from '../../../core/ui/formStyles';
 import { FormField } from '../../../core/ui/FormField';
 import { ErrorNotice } from '../../../core/ui/ErrorNotice';
 import { PrimaryButton } from '../../../core/ui/PrimaryButton';
 import type { Member } from '../../membros/api/membrosApi';
 import type { Task, TaskInput } from '../api/tarefasApi';
 import { DatePickerField } from './DatePickerField';
+
+const SAVE_BUTTON_MIN_WIDTH = 140;
 
 interface TaskFormProps {
   task: Task | null;
@@ -50,7 +53,7 @@ export function TaskForm({ task, members, message, fieldErrors = {}, submitting 
       <DatePickerField error={fieldErrors.prazo} onChange={setDueDate} originalValue={task?.prazo ?? null} value={dueDate} />
       {members ? (
         <View style={styles.assigneeField}>
-          <Text style={styles.label}>{MESSAGES.tasks.assignee}</Text>
+          <Text style={formStyles.label}>{MESSAGES.tasks.assignee}</Text>
           <View style={styles.assignees}>
           {members.map((member) => (
             <Pressable
@@ -64,7 +67,7 @@ export function TaskForm({ task, members, message, fieldErrors = {}, submitting 
             </Pressable>
           ))}
           </View>
-          {fieldErrors.responsavelId ? <Text accessibilityRole="alert" style={styles.error}>{fieldErrors.responsavelId}</Text> : null}
+          {fieldErrors.responsavelId ? <Text accessibilityRole="alert" style={formStyles.error}>{fieldErrors.responsavelId}</Text> : null}
         </View>
       ) : null}
       {error || message ? <ErrorNotice message={error ?? message ?? ''} /> : null}
@@ -95,11 +98,11 @@ const styles = StyleSheet.create({
     borderRadius: theme.radii.pill,
     borderWidth: 1,
     paddingHorizontal: theme.spacing.medium,
-    paddingVertical: theme.spacing.small - 2,
+    paddingVertical: theme.spacing.tight,
   },
   chipSelected: { backgroundColor: theme.colors.primarySoft, borderColor: theme.colors.primary },
   buttons: { alignItems: 'center', flexDirection: 'row', gap: theme.spacing.medium, justifyContent: 'flex-end' },
-  save: { minWidth: 140 },
+  save: { minWidth: SAVE_BUTTON_MIN_WIDTH },
   cancelButton: {
     alignItems: 'center',
     borderColor: theme.colors.border,
@@ -110,8 +113,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: theme.spacing.xlarge,
   },
   cancelDisabled: { opacity: theme.states.disabledOpacity },
-  label: { color: theme.colors.text, fontFamily: theme.typography.semibold, fontSize: theme.typography.label },
-  error: { color: theme.colors.destructive, fontFamily: theme.typography.regular, fontSize: theme.typography.label },
   option: { color: theme.colors.textSecondary, fontFamily: theme.typography.regular },
   selected: { color: theme.colors.primary, fontFamily: theme.typography.bold },
   cancel: { color: theme.colors.text, fontFamily: theme.typography.semibold, textAlign: 'center' },

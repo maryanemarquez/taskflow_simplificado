@@ -1,3 +1,8 @@
+const EMAIL_REQUIRED = 'Informe o e-mail.';
+const EMAIL_INVALID = 'Informe um e-mail válido.';
+const EMAIL_TOO_LONG = 'Use no máximo 150 caracteres.';
+const TITLE_REQUIRED = 'Informe o título.';
+const TYPE_REQUIRED = 'Escolha o tipo de conta.';
 const INVALID_DUE_DATE = 'Prazo inválido. Use uma data real no formato DD/MM/AAAA.';
 
 export const MESSAGES = {
@@ -45,17 +50,16 @@ export const MESSAGES = {
     password: 'Senha',
     passwordHint: 'Use ao menos 8 caracteres, com uma letra e um número.',
     required: 'Este campo é obrigatório.',
-    invalidEmail: 'Informe um e-mail válido.',
+    invalidEmail: EMAIL_INVALID,
     nameTooLong: 'Use no máximo 100 caracteres.',
-    emailTooLong: 'Use no máximo 150 caracteres.',
+    emailTooLong: EMAIL_TOO_LONG,
     passwordTooLong: 'A senha é muito longa.',
     passwordPolicy: 'A senha precisa ter ao menos 8 caracteres, com letra e número.',
     genericError: 'Não foi possível concluir o cadastro. Tente novamente.',
-    haveAccount: 'Já tenho conta',
     hasAccount: 'Já tem uma conta?',
     signIn: 'Fazer login',
     typeLabel: 'Tipo de conta',
-    typeRequired: 'Escolha o tipo de conta.',
+    typeRequired: TYPE_REQUIRED,
     typeOwner: 'Dono',
     typeOwnerHint: 'Crio e gerencio uma equipe e adiciono membros.',
     typeMember: 'Membro',
@@ -65,7 +69,6 @@ export const MESSAGES = {
     title: 'Entre na sua conta',
     subtitle: 'Use seu e-mail e sua senha.',
     submit: 'Entrar',
-    createAccount: 'Criar conta',
     noAccount: 'Ainda não tem uma conta?',
     signUp: 'Cadastre-se',
   },
@@ -104,7 +107,7 @@ export const MESSAGES = {
     advance: 'Avançar',
     back: 'Voltar',
     dueOn: (date: string) => `Prazo: ${date}`,
-    titleRequired: 'Informe o título.',
+    titleRequired: TITLE_REQUIRED,
     status: {
       PENDENTE: 'Pendente',
       EM_ANDAMENTO: 'Em andamento',
@@ -127,12 +130,12 @@ export const MESSAGES = {
   },
   fieldErrors: {
     'prazo.INVALIDO': INVALID_DUE_DATE,
-    'tipo.OBRIGATORIO': 'Escolha o tipo de conta.',
+    'tipo.OBRIGATORIO': TYPE_REQUIRED,
     'tipo.INVALIDO': 'Tipo de conta inválido.',
-    'email.INVALIDO': 'Informe um e-mail válido.',
-    'email.OBRIGATORIO': 'Informe o e-mail.',
-    'email.TAMANHO_EXCEDIDO': 'Use no máximo 150 caracteres.',
-    'titulo.OBRIGATORIO': 'Informe o título.',
+    'email.INVALIDO': EMAIL_INVALID,
+    'email.OBRIGATORIO': EMAIL_REQUIRED,
+    'email.TAMANHO_EXCEDIDO': EMAIL_TOO_LONG,
+    'titulo.OBRIGATORIO': TITLE_REQUIRED,
     'titulo.TAMANHO_EXCEDIDO': 'O título pode ter no máximo 150 caracteres.',
     'descricao.TAMANHO_EXCEDIDO': 'A descrição pode ter no máximo 2000 caracteres.',
     'responsavelId.INVALIDO': 'Escolha um responsável da sua equipe.',
@@ -151,6 +154,6 @@ export const MESSAGES = {
     email: 'E-mail do membro',
     add: 'Adicionar',
     remove: 'Remover',
-    emailRequired: 'Informe o e-mail.',
+    emailRequired: EMAIL_REQUIRED,
   },
 } as const;

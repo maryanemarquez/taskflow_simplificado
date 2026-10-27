@@ -98,7 +98,7 @@ const styles = StyleSheet.create({
   title: { color: theme.colors.text, fontFamily: theme.typography.bold, fontSize: theme.typography.body },
   arrows: { flexDirection: 'row', gap: theme.spacing.xsmall },
   arrow: { alignItems: 'center', borderRadius: theme.radii.medium, height: 28, justifyContent: 'center', width: 28 },
-  arrowDisabled: { opacity: 0.35 },
+  arrowDisabled: { opacity: theme.states.unavailableOpacity },
   week: { flexDirection: 'row' },
   weekday: { color: theme.colors.textSecondary, fontFamily: theme.typography.semibold, fontSize: theme.typography.caption, paddingVertical: theme.spacing.xsmall, textAlign: 'center' },
   cell: { alignItems: 'center', justifyContent: 'center' },

@@ -50,6 +50,6 @@ const styles = StyleSheet.create({
     padding: theme.spacing.large,
     paddingHorizontal: theme.spacing.xlarge,
   },
-  title: { color: theme.colors.text, fontFamily: theme.typography.bold, fontSize: theme.typography.body + 3 },
+  title: { color: theme.colors.text, fontFamily: theme.typography.bold, fontSize: theme.typography.modalTitle },
   body: { padding: theme.spacing.xlarge },
 });

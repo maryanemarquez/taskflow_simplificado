@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { invalidateMemberData } from '../../../core/api/invalidation';
 import { QUERY_KEYS } from '../../../core/api/queryKeys';
 import { useActionFeedback } from '../../../core/api/useActionFeedback';
 import { MESSAGES } from '../../../core/messages/messages';
@@ -15,11 +16,7 @@ export function useMemberActions() {
   const [email, setEmail] = useState('');
 
   // Remover um membro reatribui as tarefas dele ao Dono: membros, tarefas e dashboard mudam juntos.
-  const reload = () => {
-    void queryClient.invalidateQueries({ queryKey: QUERY_KEYS.members });
-    void queryClient.invalidateQueries({ queryKey: QUERY_KEYS.tasks });
-    void queryClient.invalidateQueries({ queryKey: QUERY_KEYS.dashboard });
-  };
+  const reload = () => invalidateMemberData(queryClient);
   const feedback = useActionFeedback({ onStale: reload });
   const onChanged = () => {
     feedback.clear();

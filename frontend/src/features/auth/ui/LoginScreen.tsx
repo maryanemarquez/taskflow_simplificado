@@ -1,15 +1,13 @@
 import { StyleSheet, View } from 'react-native';
-import { router } from 'expo-router';
 import { MESSAGES } from '../../../core/messages/messages';
+import { ROUTES } from '../../../core/routes';
 import { theme } from '../../../core/theme/theme';
 import { useSessionExpired } from '../../../core/session/sessionNotice';
 import { useLogin } from '../model/useLogin';
 import { FormField } from '../../../core/ui/FormField';
 import { AuthLayout } from './AuthLayout';
 import { ErrorNotice } from '../../../core/ui/ErrorNotice';
-import { LinkButton } from './LinkButton';
 import { PrimaryButton } from '../../../core/ui/PrimaryButton';
-import { ROUTES } from '../../../core/routes';
 
 export function LoginScreen() {
   const login = useLogin();
@@ -47,7 +45,6 @@ export function LoginScreen() {
           loading={login.isSubmitting}
           onPress={login.submit}
         />
-        <LinkButton label={MESSAGES.login.createAccount} onPress={() => router.replace(ROUTES.register)} />
       </View>
     </AuthLayout>
   );

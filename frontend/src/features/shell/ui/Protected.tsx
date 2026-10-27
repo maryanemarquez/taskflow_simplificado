@@ -1,10 +1,7 @@
 import type { ReactNode } from 'react';
-import { Redirect } from 'expo-router';
-import { useRequireSession } from '../../auth/model/useRequireSession';
 import type { CurrentUser } from '../../auth/model/authTypes';
 import { AppShell } from './AppShell';
-import { SessionError, SessionLoading } from './SessionNotice';
-import { ROUTES } from '../../../core/routes';
+import { SessionGate } from './SessionGate';
 
 interface ProtectedProps {
   children: (user: CurrentUser) => ReactNode;
@@ -12,17 +9,5 @@ interface ProtectedProps {
 
 /** Exige sessão e equipe: sem token vai ao login; sem equipe vai à tela "Sem equipe". */
 export function Protected({ children }: ProtectedProps) {
-  const session = useRequireSession();
-  switch (session.status) {
-    case 'anonymous':
-      return <Redirect href={ROUTES.login} />;
-    case 'loading':
-      return <SessionLoading />;
-    case 'error':
-      return <SessionError message={session.message} onRetry={session.retry} />;
-    case 'no-team':
-      return <Redirect href={ROUTES.noTeam} />;
-    case 'ready':
-      return <AppShell user={session.user}>{children(session.user)}</AppShell>;
-  }
+  return <SessionGate ready={(user) => <AppShell user={user}>{children(user)}</AppShell>} />;
 }

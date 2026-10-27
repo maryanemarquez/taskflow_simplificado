@@ -1,29 +1,19 @@
 import { useSyncExternalStore } from 'react';
+import { safeStorage } from '../storage/safeStorage';
 import { sessionNotice } from './sessionNotice';
 
 const TOKEN_KEY = 'taskflow-token';
 const listeners = new Set<() => void>();
 
-function readToken(): string | null {
-  try {
-    return localStorage.getItem(TOKEN_KEY);
-  } catch {
-    return null;
-  }
-}
-
-let currentToken = readToken();
+let currentToken = safeStorage.get(TOKEN_KEY);
 
 function setStoredToken(value: string | null) {
   currentToken = value;
-  try {
-    if (value) {
-      localStorage.setItem(TOKEN_KEY, value);
-    } else {
-      localStorage.removeItem(TOKEN_KEY);
-    }
-  } catch {
-    // Sem armazenamento disponível: o token fica só em memória.
+  // Sem armazenamento disponível, o token fica só em memória.
+  if (value) {
+    safeStorage.set(TOKEN_KEY, value);
+  } else {
+    safeStorage.remove(TOKEN_KEY);
   }
   listeners.forEach((listener) => listener());
 }

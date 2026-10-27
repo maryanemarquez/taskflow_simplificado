@@ -3,6 +3,11 @@ import { StyleSheet, Text, TextInput, View } from 'react-native';
 import { MESSAGES } from '../../../core/messages/messages';
 import { theme } from '../../../core/theme/theme';
 
+const FOCUS_DELAY_MS = 60;
+const SEGMENT_HEIGHT = 40;
+const SHORT_SEGMENT_WIDTH = 52;
+const YEAR_SEGMENT_WIDTH = 72;
+
 interface InputHandle {
   focus: () => void;
 }
@@ -41,7 +46,7 @@ export function DateSegmentInput({ value, invalid, autoFocus, onChange, onSubmit
     if (!autoFocus) {
       return undefined;
     }
-    const timer = setTimeout(() => refs.current.day?.focus(), 60);
+    const timer = setTimeout(() => refs.current.day?.focus(), FOCUS_DELAY_MS);
     return () => clearTimeout(timer);
   }, [autoFocus]);
 
@@ -94,7 +99,7 @@ export function DateSegmentInput({ value, invalid, autoFocus, onChange, onSubmit
 const styles = StyleSheet.create({
   row: { alignItems: 'center', flexDirection: 'row', justifyContent: 'center' },
   item: { alignItems: 'center', flexDirection: 'row' },
-  slash: { color: theme.colors.textSecondary, fontFamily: theme.typography.semibold, fontSize: theme.typography.body + 2, paddingHorizontal: theme.spacing.small },
+  slash: { color: theme.colors.textSecondary, fontFamily: theme.typography.semibold, fontSize: theme.typography.sectionTitle, paddingHorizontal: theme.spacing.small },
   input: {
     backgroundColor: theme.colors.surface,
     borderColor: theme.colors.border,
@@ -102,11 +107,11 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     color: theme.colors.text,
     fontFamily: theme.typography.semibold,
-    fontSize: theme.typography.body + 1,
-    height: 40,
+    fontSize: theme.typography.bodyLarge,
+    height: SEGMENT_HEIGHT,
     textAlign: 'center',
   },
-  short: { width: 52 },
-  year: { width: 72 },
+  short: { width: SHORT_SEGMENT_WIDTH },
+  year: { width: YEAR_SEGMENT_WIDTH },
   invalid: { borderColor: theme.colors.destructive },
 });

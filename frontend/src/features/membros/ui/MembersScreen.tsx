@@ -5,13 +5,17 @@ import { useViewport } from '../../../core/theme/useViewport';
 import { Avatar } from '../../../core/ui/Avatar';
 import { Badge } from '../../../core/ui/Badge';
 import { EmptyState } from '../../../core/ui/EmptyState';
+import { formStyles } from '../../../core/ui/formStyles';
 import { Icon } from '../../../core/ui/Icon';
 import { QueryStatus } from '../../../core/ui/LoadError';
 import type { CurrentUser, Role } from '../../auth/model/authTypes';
 import { isOwner, isOwnerRole } from '../../auth/model/roles';
 import { ErrorNotice } from '../../../core/ui/ErrorNotice';
+import { PageHeader } from '../../../core/ui/PageHeader';
 import { PrimaryButton } from '../../../core/ui/PrimaryButton';
 import { useMemberActions, useMembers } from '../model/useMembers';
+
+const ADD_BUTTON_MIN_WIDTH = 150;
 
 export function MembersScreen({ user }: { user: CurrentUser }) {
   const members = useMembers();
@@ -21,10 +25,7 @@ export function MembersScreen({ user }: { user: CurrentUser }) {
   const list = members.data ?? [];
   return (
     <View style={styles.page}>
-      <View style={styles.heading}>
-        <Text accessibilityRole="header" style={styles.title}>{MESSAGES.members.title}</Text>
-        {members.data ? <Text style={styles.subtitle}>{MESSAGES.members.subtitle(list.length)}</Text> : null}
-      </View>
+      <PageHeader subtitle={members.data ? MESSAGES.members.subtitle(list.length) : undefined} title={MESSAGES.members.title} />
       <QueryStatus
         data={members.data}
         error={members.error}
@@ -93,7 +94,7 @@ export function MembersScreen({ user }: { user: CurrentUser }) {
               keyboardType="email-address"
               onChangeText={actions.setEmail}
               placeholder={MESSAGES.members.emailPlaceholder}
-              style={styles.input}
+              style={[formStyles.input, styles.input]}
               value={actions.email}
             />
             <View style={styles.addButton}>
@@ -114,9 +115,6 @@ function roleLabel(role: Role) {
 const styles = StyleSheet.create({
   removing: { opacity: theme.states.disabledOpacity },
   page: { gap: theme.spacing.xlarge },
-  heading: { gap: theme.spacing.xsmall },
-  title: { color: theme.colors.text, fontFamily: theme.typography.bold, fontSize: theme.typography.pageHeading + 4 },
-  subtitle: { color: theme.colors.textSecondary, fontFamily: theme.typography.regular, fontSize: theme.typography.body },
   table: {
     backgroundColor: theme.colors.surface,
     borderColor: theme.colors.border,
@@ -132,7 +130,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     gap: theme.spacing.large,
     paddingHorizontal: theme.spacing.xlarge,
-    paddingVertical: theme.spacing.medium + 2,
+    paddingVertical: theme.spacing.row,
   },
   rowMobile: { alignItems: 'flex-start', flexDirection: 'column', gap: theme.spacing.small, paddingHorizontal: theme.spacing.large },
   headerRow: { backgroundColor: theme.colors.surfaceMuted, borderTopWidth: 0, paddingVertical: theme.spacing.medium },
@@ -161,21 +159,10 @@ const styles = StyleSheet.create({
     padding: theme.spacing.xlarge,
   },
   inviteHeader: { alignItems: 'center', flexDirection: 'row', gap: theme.spacing.small },
-  inviteTitle: { color: theme.colors.text, fontFamily: theme.typography.bold, fontSize: theme.typography.body + 2 },
+  inviteTitle: { color: theme.colors.text, fontFamily: theme.typography.bold, fontSize: theme.typography.sectionTitle },
   inviteHint: { color: theme.colors.textSecondary, fontFamily: theme.typography.regular, fontSize: theme.typography.small },
   addRow: { alignItems: 'center', flexDirection: 'row', gap: theme.spacing.medium },
   addRowMobile: { alignItems: 'stretch', flexDirection: 'column' },
-  input: {
-    backgroundColor: theme.colors.surface,
-    borderColor: theme.colors.border,
-    borderRadius: theme.radii.large,
-    borderWidth: 1,
-    color: theme.colors.text,
-    flex: 1,
-    fontFamily: theme.typography.regular,
-    fontSize: theme.typography.body,
-    height: theme.layout.fieldHeight,
-    paddingHorizontal: theme.spacing.large,
-  },
-  addButton: { minWidth: 150 },
+  input: { flex: 1 },
+  addButton: { minWidth: ADD_BUTTON_MIN_WIDTH },
 });

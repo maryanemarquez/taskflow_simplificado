@@ -1,5 +1,6 @@
 import { StyleSheet, Text, TextInput, View, type TextInputProps } from 'react-native';
 import { theme } from '../theme/theme';
+import { formStyles } from './formStyles';
 
 export interface FormFieldDefinition {
   label: string;
@@ -18,44 +19,22 @@ interface FormFieldProps {
 export function FormField({ field }: FormFieldProps) {
   return (
     <View style={styles.field}>
-      <Text style={styles.label}>{field.label}</Text>
+      <Text style={formStyles.label}>{field.label}</Text>
       <TextInput
         accessibilityLabel={field.label}
         autoCapitalize={field.autoCapitalize ?? 'none'}
         autoCorrect={false}
         keyboardType={field.keyboardType}
         onChangeText={field.onChangeText}
-        placeholder={field.label}
         secureTextEntry={field.secureTextEntry}
-        style={styles.input}
+        style={formStyles.input}
         value={field.value}
       />
-      {field.error ? <Text accessibilityRole="alert" style={styles.error}>{field.error}</Text> : null}
+      {field.error ? <Text accessibilityRole="alert" style={formStyles.error}>{field.error}</Text> : null}
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   field: { gap: theme.spacing.small },
-  label: {
-    color: theme.colors.text,
-    fontFamily: theme.typography.semibold,
-    fontSize: theme.typography.label,
-  },
-  input: {
-    backgroundColor: theme.colors.surface,
-    borderColor: theme.colors.border,
-    borderRadius: theme.radii.large,
-    borderWidth: 1,
-    color: theme.colors.text,
-    fontFamily: theme.typography.regular,
-    fontSize: theme.typography.body,
-    height: theme.layout.fieldHeight,
-    paddingHorizontal: theme.spacing.large,
-  },
-  error: {
-    color: theme.colors.destructive,
-    fontFamily: theme.typography.regular,
-    fontSize: theme.typography.label,
-  },
 });

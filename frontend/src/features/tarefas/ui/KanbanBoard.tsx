@@ -1,6 +1,7 @@
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { MESSAGES } from '../../../core/messages/messages';
 import { theme } from '../../../core/theme/theme';
+import { CountBadge } from '../../../core/ui/CountBadge';
 import { Icon } from '../../../core/ui/Icon';
 import type { CurrentUser } from '../../auth/model/authTypes';
 import type { Task } from '../api/tarefasApi';
@@ -11,6 +12,9 @@ import { Draggable, DropZone } from './dragDrop';
 import type { TaskBoardActions, TaskBoardBusy } from './taskBoardTypes';
 import { TaskCard } from './TaskCard';
 import { ErrorNotice } from '../../../core/ui/ErrorNotice';
+
+const COLUMN_MIN_HEIGHT = 160;
+const COLUMN_BASIS = 300;
 
 interface KanbanBoardProps extends TaskBoardActions, TaskBoardBusy {
   tasks: Task[];
@@ -39,7 +43,7 @@ export function KanbanBoard({ tasks, user, isTaskBusy, onChangeStatus, onEdit, o
               <View style={styles.header}>
                 <Icon color={meta.color} name={meta.icon} size={16} />
                 <Text style={styles.title}>{MESSAGES.tasks.status[status]}</Text>
-                <Text style={styles.count}>{column.length}</Text>
+                <CountBadge value={column.length} />
               </View>
               {column.length === 0 ? <Text style={styles.empty}>{MESSAGES.tasks.empty}</Text> : null}
               {column.map((item) => (
@@ -77,23 +81,13 @@ const styles = StyleSheet.create({
     borderRadius: theme.radii.xlarge,
     borderWidth: 1,
     gap: theme.spacing.medium,
-    minHeight: 160,
+    minHeight: COLUMN_MIN_HEIGHT,
     minWidth: theme.layout.kanbanColumnMinWidth,
     padding: theme.spacing.medium,
-    flexBasis: 300,
+    flexBasis: COLUMN_BASIS,
     flexGrow: 1,
   },
   header: { alignItems: 'center', flexDirection: 'row', gap: theme.spacing.small, paddingHorizontal: theme.spacing.xsmall },
   title: { color: theme.colors.text, fontFamily: theme.typography.bold, fontSize: theme.typography.body },
-  count: {
-    backgroundColor: theme.colors.border,
-    borderRadius: theme.radii.pill,
-    color: theme.colors.textSecondary,
-    fontFamily: theme.typography.semibold,
-    fontSize: theme.typography.caption,
-    overflow: 'hidden',
-    paddingHorizontal: theme.spacing.small,
-    paddingVertical: 2,
-  },
   empty: { color: theme.colors.textSecondary, fontFamily: theme.typography.regular, fontSize: theme.typography.small, padding: theme.spacing.small },
 });

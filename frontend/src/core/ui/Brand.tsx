@@ -25,6 +25,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     width: theme.layout.brandMarkSize,
   },
-  name: { color: theme.colors.text, fontFamily: theme.typography.bold, fontSize: theme.typography.brand - 3 },
+  name: { color: theme.colors.text, fontFamily: theme.typography.bold, fontSize: theme.typography.brandName },
   dot: { color: theme.colors.primary },
 });

@@ -1,6 +1,7 @@
 import { StyleSheet, Text, View } from 'react-native';
 import { MESSAGES } from '../../../core/messages/messages';
 import { theme } from '../../../core/theme/theme';
+import { PageHeader } from '../../../core/ui/PageHeader';
 import { QueryStatus } from '../../../core/ui/LoadError';
 import { STATUS_META } from '../../tarefas/model/statusMeta';
 import { STATUS_ORDER } from '../../tarefas/model/taskRules';
@@ -33,10 +34,7 @@ export function DashboardScreen() {
   const { data, error, isError, refetch } = useDashboard();
   return (
     <View style={styles.page}>
-      <View style={styles.heading}>
-        <Text accessibilityRole="header" style={styles.title}>{MESSAGES.dashboard.title}</Text>
-        <Text style={styles.subtitle}>{MESSAGES.dashboard.subtitle}</Text>
-      </View>
+      <PageHeader subtitle={MESSAGES.dashboard.subtitle} title={MESSAGES.dashboard.title} />
       <QueryStatus
         data={data}
         error={error}
@@ -56,10 +54,7 @@ export function DashboardScreen() {
 
 const styles = StyleSheet.create({
   page: { gap: theme.spacing.xlarge },
-  heading: { gap: theme.spacing.xsmall },
-  subtitle: { color: theme.colors.textSecondary, fontFamily: theme.typography.regular, fontSize: theme.typography.body },
-  title: { color: theme.colors.text, fontFamily: theme.typography.bold, fontSize: theme.typography.pageHeading },
   section: { gap: theme.spacing.large },
-  sectionTitle: { color: theme.colors.text, fontFamily: theme.typography.bold, fontSize: theme.typography.body + 2 },
+  sectionTitle: { color: theme.colors.text, fontFamily: theme.typography.bold, fontSize: theme.typography.sectionTitle },
   cards: { flexDirection: 'row', flexWrap: 'wrap', gap: theme.spacing.large },
 });

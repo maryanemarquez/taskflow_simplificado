@@ -1,15 +1,13 @@
 import { StyleSheet, Text, View } from 'react-native';
-import { router } from 'expo-router';
 import { MESSAGES } from '../../../core/messages/messages';
+import { ROUTES } from '../../../core/routes';
 import { theme } from '../../../core/theme/theme';
 import { useRegistration } from '../model/useRegistration';
 import { AccountTypeField } from './AccountTypeField';
 import { FormField } from '../../../core/ui/FormField';
 import { AuthLayout } from './AuthLayout';
 import { ErrorNotice } from '../../../core/ui/ErrorNotice';
-import { LinkButton } from './LinkButton';
 import { PrimaryButton } from '../../../core/ui/PrimaryButton';
-import { ROUTES } from '../../../core/routes';
 
 export function RegistrationScreen() {
   const registration = useRegistration();
@@ -59,7 +57,6 @@ export function RegistrationScreen() {
           loading={registration.isSubmitting}
           onPress={registration.submit}
         />
-        <LinkButton label={MESSAGES.registration.haveAccount} onPress={() => router.replace(ROUTES.login)} />
       </View>
     </AuthLayout>
   );

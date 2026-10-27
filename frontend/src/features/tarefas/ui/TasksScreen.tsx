@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { MESSAGES } from '../../../core/messages/messages';
 import { theme } from '../../../core/theme/theme';
+import { PageHeader } from '../../../core/ui/PageHeader';
 import { EmptyState } from '../../../core/ui/EmptyState';
 import { Icon, type IconName } from '../../../core/ui/Icon';
 import { QueryStatus } from '../../../core/ui/LoadError';
@@ -56,10 +57,7 @@ export function TasksScreen({ user }: { user: CurrentUser }) {
   return (
     <View style={styles.page}>
       <View style={styles.header}>
-        <View style={styles.heading}>
-          <Text accessibilityRole="header" style={styles.title}>{MESSAGES.tasks.title}</Text>
-          {tasks.data ? <Text style={styles.subtitle}>{MESSAGES.tasks.subtitle(items.length)}</Text> : null}
-        </View>
+        <PageHeader subtitle={tasks.data ? MESSAGES.tasks.subtitle(items.length) : undefined} title={MESSAGES.tasks.title} />
         <NewTaskButton onPress={() => openEditor('new')} />
       </View>
       <View accessibilityLabel={MESSAGES.tasks.viewLabel} style={styles.toggle}>
@@ -120,9 +118,6 @@ export function TasksScreen({ user }: { user: CurrentUser }) {
 const styles = StyleSheet.create({
   page: { gap: theme.spacing.xlarge },
   header: { alignItems: 'center', flexDirection: 'row', flexWrap: 'wrap', gap: theme.spacing.large, justifyContent: 'space-between' },
-  heading: { gap: theme.spacing.xsmall },
-  title: { color: theme.colors.text, fontFamily: theme.typography.bold, fontSize: theme.typography.pageHeading + 4 },
-  subtitle: { color: theme.colors.textSecondary, fontFamily: theme.typography.regular, fontSize: theme.typography.body },
   newTask: {
     alignItems: 'center',
     backgroundColor: theme.colors.primary,
@@ -145,7 +140,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     borderRadius: theme.radii.medium,
     flexDirection: 'row',
-    gap: theme.spacing.small - 2,
+    gap: theme.spacing.tight,
     paddingHorizontal: theme.spacing.large,
     paddingVertical: theme.spacing.small,
   },

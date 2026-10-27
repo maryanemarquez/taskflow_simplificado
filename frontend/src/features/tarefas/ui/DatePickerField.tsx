@@ -2,6 +2,7 @@ import { useRef, useState } from 'react';
 import { Modal as NativeModal, Pressable, StyleSheet, Text, useWindowDimensions, View } from 'react-native';
 import { MESSAGES } from '../../../core/messages/messages';
 import { theme } from '../../../core/theme/theme';
+import { formStyles } from '../../../core/ui/formStyles';
 import { useViewport } from '../../../core/theme/useViewport';
 import { Icon } from '../../../core/ui/Icon';
 import {
@@ -43,6 +44,7 @@ const POPOVER_WIDTH = 296;
 const POPOVER_HEIGHT = 372;
 const GAP = 6;
 const MARGIN = 8;
+const FALLBACK_TOP = 48;
 
 function segmentsOf(date: Ymd | null): DateSegments {
   if (!date) {
@@ -65,7 +67,7 @@ export function DatePickerField({ value, originalValue, error, onChange }: DateP
 
   return (
     <View style={styles.field}>
-      <Text style={styles.label}>{MESSAGES.tasks.dueDate}</Text>
+      <Text style={formStyles.label}>{MESSAGES.tasks.dueDate}</Text>
       <View ref={fieldRef as never} style={styles.control}>
         <Pressable
           accessibilityLabel={`${MESSAGES.tasks.dueDate}: ${date ? toBr(date) : MESSAGES.datePicker.placeholder}`}
@@ -82,7 +84,7 @@ export function DatePickerField({ value, originalValue, error, onChange }: DateP
           </Pressable>
         ) : null}
       </View>
-      {error ? <Text accessibilityRole="alert" style={styles.fieldError}>{error}</Text> : null}
+      {error ? <Text accessibilityRole="alert" style={formStyles.error}>{error}</Text> : null}
       {open ? (
         <DatePopover
           anchor={anchor}
@@ -114,7 +116,7 @@ function DatePopover({ anchor, value, originalValue, onChange, onClose }: DatePo
   const left = Math.max(MARGIN, Math.min(anchor?.x ?? MARGIN, windowWidth - width - MARGIN));
   const below = (anchor?.y ?? 0) + (anchor?.height ?? 0) + GAP;
   const fitsBelow = below + POPOVER_HEIGHT <= windowHeight - MARGIN;
-  const top = anchor ? Math.max(MARGIN, fitsBelow ? below : anchor.y - POPOVER_HEIGHT - GAP) : MARGIN * 6;
+  const top = anchor ? Math.max(MARGIN, fitsBelow ? below : anchor.y - POPOVER_HEIGHT - GAP) : FALLBACK_TOP;
 
   const pick = (date: Ymd) => {
     onChange(toIso(date));
@@ -174,7 +176,6 @@ function DatePopover({ anchor, value, originalValue, onChange, onClose }: DatePo
 
 const styles = StyleSheet.create({
   field: { gap: theme.spacing.small },
-  label: { color: theme.colors.text, fontFamily: theme.typography.semibold, fontSize: theme.typography.label },
   control: {
     alignItems: 'center',
     backgroundColor: theme.colors.surface,
@@ -188,7 +189,6 @@ const styles = StyleSheet.create({
   value: { color: theme.colors.text, fontFamily: theme.typography.regular, fontSize: theme.typography.body },
   placeholder: { color: theme.colors.textSecondary },
   clear: { alignItems: 'center', height: '100%', justifyContent: 'center', paddingHorizontal: theme.spacing.medium },
-  fieldError: { color: theme.colors.destructive, fontFamily: theme.typography.regular, fontSize: theme.typography.label },
   layer: { flex: 1 },
   backdrop: { ...(StyleSheet.absoluteFill as object) },
   popover: {

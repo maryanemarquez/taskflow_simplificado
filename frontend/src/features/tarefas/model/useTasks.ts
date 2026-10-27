@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useActionFeedback } from '../../../core/api/useActionFeedback';
+import { invalidateTaskData } from '../../../core/api/invalidation';
 import { QUERY_KEYS } from '../../../core/api/queryKeys';
 import { tarefasApi, type TaskInput, type TaskStatus } from '../api/tarefasApi';
 
@@ -18,10 +19,7 @@ export function useTasks() {
 export function useTaskActions(onDone: () => void) {
   const queryClient = useQueryClient();
 
-  const reload = () => {
-    void queryClient.invalidateQueries({ queryKey: QUERY_KEYS.tasks });
-    void queryClient.invalidateQueries({ queryKey: QUERY_KEYS.dashboard });
-  };
+  const reload = () => invalidateTaskData(queryClient);
   // Tarefa removida ou alterada por outra pessoa: a tela mostra dados velhos, então recarrega a lista.
   const feedback = useActionFeedback({ fields: TASK_FORM_FIELDS, onStale: reload });
   const onChanged = () => {
