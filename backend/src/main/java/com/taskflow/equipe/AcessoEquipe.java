@@ -16,9 +16,14 @@ public class AcessoEquipe {
         this.usuarioRepository = usuarioRepository;
     }
 
-    public Usuario exigirComEquipe(long usuarioId) {
-        Usuario usuario = usuarioRepository.findById(usuarioId)
+    /** Usuário do token; se ele não existe mais, a requisição não está autenticada. */
+    public Usuario exigirUsuario(long usuarioId) {
+        return usuarioRepository.findById(usuarioId)
                 .orElseThrow(() -> new ErroDeAplicacao(CodigoErroApi.NAO_AUTENTICADO));
+    }
+
+    public Usuario exigirComEquipe(long usuarioId) {
+        Usuario usuario = exigirUsuario(usuarioId);
         if (!usuario.temEquipe()) {
             throw new ErroDeAplicacao(CodigoErroApi.SEM_EQUIPE);
         }
@@ -27,9 +32,13 @@ public class AcessoEquipe {
 
     public Usuario exigirDono(long usuarioId) {
         Usuario usuario = exigirComEquipe(usuarioId);
+        exigirDono(usuario);
+        return usuario;
+    }
+
+    public void exigirDono(Usuario usuario) {
         if (!usuario.ehDono()) {
             throw new ErroDeAplicacao(CodigoErroApi.SEM_PERMISSAO);
         }
-        return usuario;
     }
 }

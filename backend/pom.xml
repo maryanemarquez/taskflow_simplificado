@@ -20,14 +20,10 @@
 
     <properties>
         <java.version>21</java.version>
-        <cobertura.minima>0.80</cobertura.minima>
+        <jacoco.cobertura.minima>0.80</jacoco.cobertura.minima>
     </properties>
 
     <dependencies>
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter</artifactId>
-        </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-data-jpa</artifactId>
@@ -104,7 +100,7 @@
                                         <limit>
                                             <counter>LINE</counter>
                                             <value>COVEREDRATIO</value>
-                                            <minimum>${cobertura.minima}</minimum>
+                                            <minimum>${jacoco.cobertura.minima}</minimum>
                                         </limit>
                                     </limits>
                                 </rule>

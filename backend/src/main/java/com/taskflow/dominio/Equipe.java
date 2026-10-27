@@ -16,7 +16,7 @@ public class Equipe {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "nome", length = 150, nullable = false)
+    @Column(name = "nome", length = LimitesCampos.NOME_EQUIPE, nullable = false)
     private String nome;
 
     @Column(name = "criado_em", nullable = false)
@@ -36,9 +36,5 @@ public class Equipe {
 
     public String getNome() {
         return nome;
-    }
-
-    public Instant getCriadoEm() {
-        return criadoEm;
     }
 }

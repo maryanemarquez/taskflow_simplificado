@@ -1,7 +1,6 @@
 package com.taskflow.auth.controller;
 
 import com.taskflow.auth.service.JwtService;
-import com.taskflow.dominio.UsuarioRepository;
 import com.taskflow.erro.CodigoErroApi;
 import com.taskflow.erro.ErroDeAplicacao;
 import jakarta.servlet.http.HttpServletRequest;
@@ -10,7 +9,10 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.cors.CorsUtils;
 import org.springframework.web.servlet.HandlerInterceptor;
 
-/** Exige JWT válido nas rotas protegidas e publica o id do usuário na requisição. */
+/**
+ * Exige JWT válido nas rotas protegidas e publica o id do usuário na requisição. A existência do
+ * usuário é verificada por quem o carrega (serviços), que respondem {@code NAO_AUTENTICADO}.
+ */
 @Component
 public class AutenticacaoInterceptor implements HandlerInterceptor {
 
@@ -18,11 +20,9 @@ public class AutenticacaoInterceptor implements HandlerInterceptor {
     private static final String PREFIXO_BEARER = "Bearer ";
 
     private final JwtService jwtService;
-    private final UsuarioRepository usuarioRepository;
 
-    public AutenticacaoInterceptor(JwtService jwtService, UsuarioRepository usuarioRepository) {
+    public AutenticacaoInterceptor(JwtService jwtService) {
         this.jwtService = jwtService;
-        this.usuarioRepository = usuarioRepository;
     }
 
     @Override
@@ -35,9 +35,6 @@ public class AutenticacaoInterceptor implements HandlerInterceptor {
             throw new ErroDeAplicacao(CodigoErroApi.NAO_AUTENTICADO);
         }
         long usuarioId = jwtService.validar(cabecalho.substring(PREFIXO_BEARER.length()).trim());
-        if (!usuarioRepository.existsById(usuarioId)) {
-            throw new ErroDeAplicacao(CodigoErroApi.NAO_AUTENTICADO);
-        }
         requisicao.setAttribute(ATRIBUTO_USUARIO_ID, usuarioId);
         return true;
     }

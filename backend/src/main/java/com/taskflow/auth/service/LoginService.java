@@ -6,12 +6,14 @@ import com.taskflow.dominio.Usuario;
 import com.taskflow.dominio.UsuarioRepository;
 import com.taskflow.erro.CodigoErroApi;
 import com.taskflow.erro.ErroDeAplicacao;
-import java.util.Locale;
+import com.taskflow.validacao.Campos;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 @Service
 public class LoginService {
+
+    private static final String SENHA_FICTICIA = "senha-inexistente-1";
 
     private final UsuarioRepository usuarioRepository;
     private final PasswordEncoder passwordEncoder;
@@ -25,7 +27,7 @@ public class LoginService {
         this.usuarioRepository = usuarioRepository;
         this.passwordEncoder = passwordEncoder;
         this.jwtService = jwtService;
-        this.hashFalso = passwordEncoder.encode("senha-inexistente-1");
+        this.hashFalso = passwordEncoder.encode(SENHA_FICTICIA);
     }
 
     /** E-mail inexistente e senha errada respondem igual, com custo de hash semelhante. */
@@ -33,7 +35,7 @@ public class LoginService {
         if (login.email() == null || login.senha() == null) {
             throw new ErroDeAplicacao(CodigoErroApi.CREDENCIAIS_INVALIDAS);
         }
-        String email = login.email().trim().toLowerCase(Locale.ROOT);
+        String email = Campos.normalizarEmail(login.email());
         Usuario usuario = usuarioRepository.findByEmail(email).orElse(null);
         String hash = usuario == null ? hashFalso : usuario.getSenhaHash();
         boolean senhaConfere = passwordEncoder.matches(login.senha(), hash);

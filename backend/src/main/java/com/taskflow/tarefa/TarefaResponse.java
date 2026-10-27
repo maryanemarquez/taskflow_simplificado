@@ -1,5 +1,6 @@
 package com.taskflow.tarefa;
 
+import com.taskflow.dominio.StatusTarefa;
 import com.taskflow.dominio.Tarefa;
 import java.time.LocalDate;
 
@@ -7,7 +8,7 @@ public record TarefaResponse(
         Long id,
         String titulo,
         String descricao,
-        String status,
+        StatusTarefa status,
         LocalDate prazo,
         Responsavel responsavel) {
 
@@ -19,7 +20,7 @@ public record TarefaResponse(
                 tarefa.getId(),
                 tarefa.getTitulo(),
                 tarefa.getDescricao(),
-                tarefa.getStatus().name(),
+                tarefa.getStatus(),
                 tarefa.getPrazo(),
                 new Responsavel(tarefa.getResponsavel().getId(), tarefa.getResponsavel().getNome()));
     }

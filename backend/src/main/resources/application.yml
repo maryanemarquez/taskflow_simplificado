@@ -11,6 +11,9 @@ spring:
       hibernate:
         jdbc:
           time_zone: UTC
+logging:
+  pattern:
+    level: "%5p [%X{requestId:-}]"
 taskflow:
   cors:
     origem: ${CORS_ORIGEM:http://localhost:8081}

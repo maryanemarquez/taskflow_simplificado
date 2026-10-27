@@ -1,8 +1,7 @@
 package com.taskflow.dashboard;
 
-import com.taskflow.auth.controller.AutenticacaoInterceptor;
+import com.taskflow.auth.controller.UsuarioAutenticado;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestAttribute;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -18,7 +17,7 @@ public class DashboardController {
 
     @GetMapping
     public DashboardResponse consultar(
-            @RequestAttribute(AutenticacaoInterceptor.ATRIBUTO_USUARIO_ID) Long usuarioId) {
+            @UsuarioAutenticado long usuarioId) {
         return dashboardService.consultar(usuarioId);
     }
 }

@@ -1,15 +1,17 @@
 package com.taskflow.tarefa;
 
-import com.taskflow.dominio.Campos;
+import com.taskflow.dominio.DadosTarefa;
+import com.taskflow.dominio.LimitesCampos;
 import com.taskflow.dominio.StatusTarefa;
 import com.taskflow.dominio.Tarefa;
 import com.taskflow.dominio.TarefaRepository;
 import com.taskflow.dominio.Usuario;
 import com.taskflow.dominio.UsuarioRepository;
 import com.taskflow.equipe.AcessoEquipe;
+import com.taskflow.erro.CampoApi;
 import com.taskflow.erro.CodigoErroApi;
 import com.taskflow.erro.ErroDeAplicacao;
-import com.taskflow.erro.ErroValidacao;
+import com.taskflow.validacao.Campos;
 import java.time.Clock;
 import java.util.List;
 import org.springframework.stereotype.Service;
@@ -17,13 +19,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class TarefaService {
-
-    private static final int MAXIMO_TITULO = 150;
-    private static final int MAXIMO_DESCRICAO = 2000;
-    private static final String CAMPO_TITULO = "titulo";
-    private static final String CAMPO_DESCRICAO = "descricao";
-    private static final String CAMPO_RESPONSAVEL = "responsavelId";
-    private static final String CAMPO_STATUS = "status";
 
     private final AcessoEquipe acesso;
     private final TarefaRepository tarefaRepository;
@@ -53,15 +48,11 @@ public class TarefaService {
     @Transactional
     public TarefaResponse criar(long usuarioId, TarefaRequest requisicao) {
         Usuario usuario = acesso.exigirComEquipe(usuarioId);
-        String titulo = Campos.textoObrigatorio(requisicao.titulo(), CAMPO_TITULO, MAXIMO_TITULO);
-        String descricao = Campos.textoOpcional(requisicao.descricao(), CAMPO_DESCRICAO, MAXIMO_DESCRICAO);
+        DadosTarefa dados = validarDados(requisicao);
         Usuario responsavel = usuario.ehDono() && requisicao.responsavelId() != null
                 ? responsavelDaEquipe(usuario, requisicao.responsavelId())
                 : usuario;
-        Tarefa tarefa = new Tarefa(usuario.getEquipe(), usuario, clock.instant());
-        tarefa.atualizar(titulo, descricao, requisicao.prazo());
-        tarefa.atribuirA(responsavel);
-        return TarefaResponse.de(tarefaRepository.save(tarefa));
+        return TarefaResponse.de(tarefaRepository.save(new Tarefa(usuario, responsavel, dados, clock.instant())));
     }
 
     @Transactional
@@ -69,17 +60,14 @@ public class TarefaService {
         Usuario usuario = acesso.exigirComEquipe(usuarioId);
         Tarefa tarefa = buscarNaEquipe(usuario, tarefaId);
         exigirDonoOuResponsavel(usuario, tarefa);
-        String titulo = Campos.textoObrigatorio(requisicao.titulo(), CAMPO_TITULO, MAXIMO_TITULO);
-        String descricao = Campos.textoOpcional(requisicao.descricao(), CAMPO_DESCRICAO, MAXIMO_DESCRICAO);
+        DadosTarefa dados = validarDados(requisicao);
         Long novoResponsavelId = requisicao.responsavelId();
         if (novoResponsavelId != null && !novoResponsavelId.equals(tarefa.getResponsavel().getId())) {
-            if (!usuario.ehDono()) {
-                throw new ErroDeAplicacao(CodigoErroApi.SEM_PERMISSAO);
-            }
+            acesso.exigirDono(usuario);
             tarefa.atribuirA(responsavelDaEquipe(usuario, novoResponsavelId));
         }
-        tarefa.atualizar(titulo, descricao, requisicao.prazo());
-        return TarefaResponse.de(tarefaRepository.save(tarefa));
+        tarefa.atualizar(dados);
+        return TarefaResponse.de(tarefa);
     }
 
     @Transactional
@@ -87,22 +75,27 @@ public class TarefaService {
         Usuario usuario = acesso.exigirComEquipe(usuarioId);
         Tarefa tarefa = buscarNaEquipe(usuario, tarefaId);
         exigirDonoOuResponsavel(usuario, tarefa);
-        StatusTarefa novoStatus = interpretarStatus(statusInformado);
+        StatusTarefa novoStatus = Campos.enumObrigatorio(statusInformado, StatusTarefa.class, CampoApi.STATUS);
         if (!tarefa.getStatus().podeIrPara(novoStatus)) {
             throw new ErroDeAplicacao(CodigoErroApi.TRANSICAO_STATUS_INVALIDA);
         }
         tarefa.mudarStatus(novoStatus);
-        return TarefaResponse.de(tarefaRepository.save(tarefa));
+        return TarefaResponse.de(tarefa);
     }
 
     @Transactional
     public void remover(long usuarioId, long tarefaId) {
         Usuario usuario = acesso.exigirComEquipe(usuarioId);
         Tarefa tarefa = buscarNaEquipe(usuario, tarefaId);
-        if (!usuario.ehDono()) {
-            throw new ErroDeAplicacao(CodigoErroApi.SEM_PERMISSAO);
-        }
+        acesso.exigirDono(usuario);
         tarefaRepository.delete(tarefa);
+    }
+
+    private DadosTarefa validarDados(TarefaRequest requisicao) {
+        return new DadosTarefa(
+                Campos.textoObrigatorio(requisicao.titulo(), CampoApi.TITULO, LimitesCampos.TITULO_TAREFA),
+                Campos.textoOpcional(requisicao.descricao(), CampoApi.DESCRICAO, LimitesCampos.DESCRICAO_TAREFA),
+                requisicao.prazo());
     }
 
     private Tarefa buscarNaEquipe(Usuario usuario, long tarefaId) {
@@ -119,14 +112,6 @@ public class TarefaService {
 
     private Usuario responsavelDaEquipe(Usuario usuario, Long responsavelId) {
         return usuarioRepository.findByIdAndEquipeId(responsavelId, usuario.getEquipe().getId())
-                .orElseThrow(() -> ErroValidacao.invalido(CAMPO_RESPONSAVEL));
-    }
-
-    private StatusTarefa interpretarStatus(String valor) {
-        try {
-            return StatusTarefa.valueOf(valor == null ? "" : valor.trim());
-        } catch (IllegalArgumentException erro) {
-            throw ErroValidacao.invalido(CAMPO_STATUS);
-        }
+                .orElseThrow(() -> ErroDeAplicacao.invalido(CampoApi.RESPONSAVEL_ID));
     }
 }
