@@ -13,12 +13,29 @@ import type { TaskBoardActions } from './taskBoardTypes';
 interface TaskRowProps extends TaskBoardActions {
   task: Task;
   user: CurrentUser;
+  /** Há uma ação desta tarefa em andamento: as ações ficam desabilitadas. */
+  busy?: boolean;
 }
 
-function Action({ label, icon, onPress, danger }: { label: string; icon: IconName; onPress: () => void; danger?: boolean }) {
+interface ActionProps {
+  label: string;
+  icon: IconName;
+  onPress: () => void;
+  danger?: boolean;
+  disabled?: boolean;
+}
+
+function Action({ label, icon, onPress, danger, disabled }: ActionProps) {
   const color = danger ? theme.colors.destructive : theme.colors.primary;
   return (
-    <Pressable accessibilityLabel={label} accessibilityRole="button" onPress={onPress} style={styles.action}>
+    <Pressable
+      accessibilityLabel={label}
+      accessibilityRole="button"
+      accessibilityState={{ disabled: Boolean(disabled) }}
+      disabled={disabled}
+      onPress={onPress}
+      style={[styles.action, disabled && styles.actionDisabled]}
+    >
       <Icon color={color} name={icon} size={14} />
       <Text style={[styles.actionLabel, { color }]}>{label}</Text>
     </Pressable>
@@ -26,7 +43,7 @@ function Action({ label, icon, onPress, danger }: { label: string; icon: IconNam
 }
 
 /** Uma tarefa por linha: título e descrição, responsável, prazo e ações. */
-export function TaskRow({ task, user, onChangeStatus, onEdit, onRemove }: TaskRowProps) {
+export function TaskRow({ task, user, busy, onChangeStatus, onEdit, onRemove }: TaskRowProps) {
   const { isMobile } = useViewport();
   const manage = canManage(user, task);
   const previous = neighborStatus(task.status, -1);
@@ -50,10 +67,10 @@ export function TaskRow({ task, user, onChangeStatus, onEdit, onRemove }: TaskRo
         ) : null}
       </View>
       <View style={[styles.actions, !isMobile && styles.actionsColumn]}>
-        {manage && previous ? <Action icon="arrow-left" label={MESSAGES.tasks.back} onPress={() => onChangeStatus(task.id, previous)} /> : null}
-        {manage && next ? <Action icon="arrow-right" label={MESSAGES.tasks.advance} onPress={() => onChangeStatus(task.id, next)} /> : null}
-        {manage ? <Action icon="edit-2" label={MESSAGES.tasks.edit} onPress={() => onEdit(task)} /> : null}
-        {isOwner(user) ? <Action danger icon="trash-2" label={MESSAGES.tasks.remove} onPress={() => onRemove(task.id)} /> : null}
+        {manage && previous ? <Action disabled={busy} icon="arrow-left" label={MESSAGES.tasks.back} onPress={() => onChangeStatus(task.id, previous)} /> : null}
+        {manage && next ? <Action disabled={busy} icon="arrow-right" label={MESSAGES.tasks.advance} onPress={() => onChangeStatus(task.id, next)} /> : null}
+        {manage ? <Action disabled={busy} icon="edit-2" label={MESSAGES.tasks.edit} onPress={() => onEdit(task)} /> : null}
+        {isOwner(user) ? <Action danger disabled={busy} icon="trash-2" label={MESSAGES.tasks.remove} onPress={() => onRemove(task.id)} /> : null}
       </View>
     </View>
   );
@@ -81,5 +98,6 @@ const styles = StyleSheet.create({
   actions: { alignItems: 'center', flexDirection: 'row', flexWrap: 'wrap', gap: theme.spacing.large },
   actionsColumn: { flexWrap: 'nowrap', justifyContent: 'flex-end', width: 330 },
   action: { alignItems: 'center', flexDirection: 'row', gap: theme.spacing.xsmall },
+  actionDisabled: { opacity: theme.states.disabledOpacity },
   actionLabel: { fontFamily: theme.typography.semibold, fontSize: theme.typography.label },
 });

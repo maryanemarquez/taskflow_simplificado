@@ -52,7 +52,14 @@ export function MembersScreen({ user }: { user: CurrentUser }) {
               {isOwner ? (
                 <View style={styles.colAction}>
                   {member.papel !== 'DONO' ? (
-                    <Pressable accessibilityLabel={MESSAGES.members.remove} accessibilityRole="button" onPress={() => actions.remove(member.id)} style={styles.removeButton}>
+                    <Pressable
+                      accessibilityLabel={MESSAGES.members.remove}
+                      accessibilityRole="button"
+                      accessibilityState={{ disabled: actions.removingId !== null }}
+                      disabled={actions.removingId !== null}
+                      onPress={() => actions.remove(member.id)}
+                      style={[styles.removeButton, actions.removingId === member.id && styles.removing]}
+                    >
                       <Icon color={theme.colors.destructive} name="trash-2" size={14} />
                       <Text style={styles.remove}>{MESSAGES.members.remove}</Text>
                     </Pressable>
@@ -81,7 +88,7 @@ export function MembersScreen({ user }: { user: CurrentUser }) {
               value={actions.email}
             />
             <View style={styles.addButton}>
-              <PrimaryButton disabled={false} icon="plus" label={MESSAGES.members.add} loading={false} onPress={actions.add} />
+              <PrimaryButton icon="plus" label={MESSAGES.members.add} loading={actions.isAdding} onPress={actions.add} />
             </View>
           </View>
           {actions.message ? <ErrorNotice message={actions.message} /> : null}
@@ -96,6 +103,7 @@ function roleLabel(role: string) {
 }
 
 const styles = StyleSheet.create({
+  removing: { opacity: theme.states.disabledOpacity },
   page: { gap: theme.spacing.xlarge },
   heading: { gap: theme.spacing.xsmall },
   title: { color: theme.colors.text, fontFamily: theme.typography.bold, fontSize: theme.typography.pageHeading + 4 },

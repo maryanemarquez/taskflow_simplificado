@@ -41,7 +41,16 @@ export function TasksScreen({ user }: { user: CurrentUser }) {
   const task = editing && editing !== 'new' ? editing : null;
   const save = (input: TaskInput) => (task ? actions.update(task.id, input) : actions.create(input));
   const items = tasks.data ?? [];
-  const board = { onChangeStatus: actions.changeStatus, onEdit: setEditing, onRemove: actions.remove };
+  // Abrir ou fechar o formulário descarta o erro anterior: ele pertence à tentativa que o gerou.
+  const openEditor = (next: Exclude<Editing, null>) => {
+    actions.clearMessage();
+    setEditing(next);
+  };
+  const closeEditor = () => {
+    actions.clearMessage();
+    setEditing(null);
+  };
+  const board = { isTaskBusy: actions.isTaskBusy, onChangeStatus: actions.changeStatus, onEdit: openEditor, onRemove: actions.remove };
 
   return (
     <View style={styles.page}>
@@ -50,7 +59,7 @@ export function TasksScreen({ user }: { user: CurrentUser }) {
           <Text accessibilityRole="header" style={styles.title}>{MESSAGES.tasks.title}</Text>
           <Text style={styles.subtitle}>{MESSAGES.tasks.subtitle(items.length)}</Text>
         </View>
-        <NewTaskButton onPress={() => setEditing('new')} />
+        <NewTaskButton onPress={() => openEditor('new')} />
       </View>
       <View accessibilityLabel={MESSAGES.tasks.viewLabel} style={styles.toggle}>
         {VIEWS.map((option) => {
@@ -72,7 +81,7 @@ export function TasksScreen({ user }: { user: CurrentUser }) {
       {!editing && actions.message ? <ErrorNotice message={actions.message} /> : null}
       {tasks.data && items.length === 0 ? (
         <EmptyState icon="folder" text={MESSAGES.tasks.emptyText} title={MESSAGES.tasks.emptyTitle}>
-          <NewTaskButton onPress={() => setEditing('new')} />
+          <NewTaskButton onPress={() => openEditor('new')} />
         </EmptyState>
       ) : view === 'KANBAN' ? (
         <KanbanBoard tasks={items} user={user} {...board} />
@@ -81,15 +90,16 @@ export function TasksScreen({ user }: { user: CurrentUser }) {
       )}
       {editing ? (
         <Modal
-          onClose={() => setEditing(null)}
+          onClose={closeEditor}
           title={task ? MESSAGES.tasks.editTaskTitle : MESSAGES.tasks.newTaskTitle}
         >
           <TaskForm
             key={task?.id ?? 'new'}
             members={isOwner(user) ? (members.data ?? []) : null}
             message={actions.message}
-            onCancel={() => setEditing(null)}
+            onCancel={closeEditor}
             onSubmit={save}
+            submitting={actions.isSaving}
             task={task}
           />
         </Modal>

@@ -1,6 +1,7 @@
 import React from 'react';
 import { fireEvent, screen, waitFor } from '@testing-library/react-native';
 import { router } from 'expo-router';
+import { ApiRequestError } from '../src/core/api/httpErrors';
 import { session } from '../src/core/session/session';
 import { authApi } from '../src/features/auth/api/authApi';
 import { NoTeamScreen } from '../src/features/equipe/ui/NoTeamScreen';
@@ -89,4 +90,29 @@ it('HIST-001-equipe/C06 - Dono remove um membro, mas não o Dono', async () => {
   fireEvent.press(screen.getByRole('button', { name: 'Remover' }));
 
   await waitFor(() => expect(membrosApi.remove).toHaveBeenCalledWith(2));
+});
+
+it('FASE2-B1 - clique duplo em "Adicionar" envia o convite uma só vez', async () => {
+  jest.mocked(membrosApi.add).mockImplementation(() => new Promise<never>(() => undefined));
+  renderWithClient(<MembersScreen user={OWNER} />);
+  await screen.findByText('bia@taskflow.invalid');
+
+  fireEvent.changeText(screen.getByLabelText('E-mail do membro'), 'nova@taskflow.invalid');
+  fireEvent.press(screen.getByRole('button', { name: 'Adicionar' }));
+  fireEvent.press(await screen.findByRole('button', { name: /Enviando/ }));
+
+  await waitFor(() => expect(membrosApi.add).toHaveBeenCalledTimes(1));
+});
+
+it('FASE2-C10 - remover membro que já saiu recarrega a lista', async () => {
+  jest
+    .mocked(membrosApi.remove)
+    .mockRejectedValue(new ApiRequestError({ codigo: 'USUARIO_NAO_ENCONTRADO' }, { status: 404 }));
+  renderWithClient(<MembersScreen user={OWNER} />);
+  await screen.findByText('bia@taskflow.invalid');
+  expect(membrosApi.list).toHaveBeenCalledTimes(1);
+
+  fireEvent.press(screen.getByRole('button', { name: 'Remover' }));
+
+  await waitFor(() => expect(membrosApi.list).toHaveBeenCalledTimes(2));
 });

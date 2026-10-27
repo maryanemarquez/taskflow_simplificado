@@ -6,3 +6,8 @@ export interface TaskBoardActions {
   onRemove: (id: number) => void;
   onChangeStatus: (id: number, status: TaskStatus) => void;
 }
+
+/** Indica à visão quais tarefas têm uma ação em andamento (as ações delas ficam desabilitadas). */
+export interface TaskBoardBusy {
+  isTaskBusy: (id: number) => boolean;
+}

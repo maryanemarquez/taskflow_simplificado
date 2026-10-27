@@ -13,12 +13,14 @@ interface TaskFormProps {
   task: Task | null;
   members: Member[] | null;
   message: string | null;
+  /** Salvando: bloqueia novo envio (clique duplo) e o cancelamento. */
+  submitting?: boolean;
   onSubmit: (input: TaskInput) => void;
   onCancel: () => void;
 }
 
 /** `members` só é informado ao Dono, que pode escolher o responsável. */
-export function TaskForm({ task, members, message, onSubmit, onCancel }: TaskFormProps) {
+export function TaskForm({ task, members, message, submitting = false, onSubmit, onCancel }: TaskFormProps) {
   const [title, setTitle] = useState(task?.titulo ?? '');
   const [description, setDescription] = useState(task?.descricao ?? '');
   const [dueDate, setDueDate] = useState<string | null>(task?.prazo ?? null);
@@ -64,11 +66,17 @@ export function TaskForm({ task, members, message, onSubmit, onCancel }: TaskFor
       ) : null}
       {error || message ? <ErrorNotice message={error ?? message ?? ''} /> : null}
       <View style={styles.buttons}>
-        <Pressable accessibilityRole="button" onPress={onCancel} style={styles.cancelButton}>
+        <Pressable
+          accessibilityRole="button"
+          accessibilityState={{ disabled: submitting }}
+          disabled={submitting}
+          onPress={onCancel}
+          style={[styles.cancelButton, submitting && styles.cancelDisabled]}
+        >
           <Text style={styles.cancel}>{MESSAGES.common.cancel}</Text>
         </Pressable>
         <View style={styles.save}>
-          <PrimaryButton disabled={false} icon="check" label={MESSAGES.common.save} loading={false} onPress={submit} />
+          <PrimaryButton icon="check" label={MESSAGES.common.save} loading={submitting} onPress={submit} />
         </View>
       </View>
     </View>
@@ -98,6 +106,7 @@ const styles = StyleSheet.create({
     minHeight: theme.layout.buttonHeight,
     paddingHorizontal: theme.spacing.xlarge,
   },
+  cancelDisabled: { opacity: theme.states.disabledOpacity },
   label: { color: theme.colors.text, fontFamily: theme.typography.semibold, fontSize: theme.typography.label },
   option: { color: theme.colors.textSecondary, fontFamily: theme.typography.regular },
   selected: { color: theme.colors.primary, fontFamily: theme.typography.bold },

@@ -5,19 +5,21 @@ import { Icon, type IconName } from '../../../core/ui/Icon';
 
 interface PrimaryButtonProps {
   label: string;
-  loading: boolean;
-  disabled: boolean;
+  loading?: boolean;
+  disabled?: boolean;
   onPress: () => void;
   icon?: IconName;
 }
 
-export function PrimaryButton({ label, loading, disabled, onPress, icon }: PrimaryButtonProps) {
+export function PrimaryButton({ label, loading = false, disabled = false, onPress, icon }: PrimaryButtonProps) {
+  const inactive = disabled || loading;
   return (
     <Pressable
       accessibilityRole="button"
-      disabled={disabled}
+      accessibilityState={{ disabled: inactive, busy: loading }}
+      disabled={inactive}
       onPress={onPress}
-      style={({ pressed }) => [styles.button, pressed && styles.pressed, disabled && styles.disabled]}
+      style={({ pressed }) => [styles.button, pressed && styles.pressed, inactive && styles.disabled]}
     >
       <Text style={styles.label}>{loading ? MESSAGES.registration.loading : label}</Text>
       {icon && !loading ? <Icon color={theme.colors.surface} name={icon} size={16} /> : null}

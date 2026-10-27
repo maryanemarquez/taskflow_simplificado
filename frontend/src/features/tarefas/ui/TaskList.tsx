@@ -6,16 +6,16 @@ import type { CurrentUser } from '../../auth/model/authTypes';
 import type { Task } from '../api/tarefasApi';
 import { STATUS_META } from '../model/statusMeta';
 import { STATUS_ORDER } from '../model/taskRules';
-import type { TaskBoardActions } from './taskBoardTypes';
+import type { TaskBoardActions, TaskBoardBusy } from './taskBoardTypes';
 import { TaskRow } from './TaskRow';
 
-interface TaskListProps extends TaskBoardActions {
+interface TaskListProps extends TaskBoardActions, TaskBoardBusy {
   tasks: Task[];
   user: CurrentUser;
 }
 
 /** Visão em lista: um bloco por status, com uma tarefa por linha, uma abaixo da outra. */
-export function TaskList({ tasks, user, onChangeStatus, onEdit, onRemove }: TaskListProps) {
+export function TaskList({ tasks, user, isTaskBusy, onChangeStatus, onEdit, onRemove }: TaskListProps) {
   return (
     <View style={styles.list}>
       {STATUS_ORDER.map((status) => {
@@ -32,7 +32,14 @@ export function TaskList({ tasks, user, onChangeStatus, onEdit, onRemove }: Task
               {group.length === 0 ? <Text style={styles.empty}>{MESSAGES.tasks.empty}</Text> : null}
               {group.map((item, index) => (
                 <View key={item.id} style={index === 0 ? styles.first : undefined}>
-                  <TaskRow onChangeStatus={onChangeStatus} onEdit={onEdit} onRemove={onRemove} task={item} user={user} />
+                  <TaskRow
+                    busy={isTaskBusy(item.id)}
+                    onChangeStatus={onChangeStatus}
+                    onEdit={onEdit}
+                    onRemove={onRemove}
+                    task={item}
+                    user={user}
+                  />
                 </View>
               ))}
             </View>

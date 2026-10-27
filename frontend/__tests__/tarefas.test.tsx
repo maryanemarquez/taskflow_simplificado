@@ -218,3 +218,61 @@ it('HIST-001-tarefa/C13 - erro do campo prazo vindo da API mostra mensagem clara
 
   expect(await screen.findByText('Prazo inválido. Use uma data real no formato DD/MM/AAAA.')).toBeTruthy();
 });
+
+const neverResolves = () => new Promise<never>(() => undefined);
+
+it('FASE2-B1 - clique duplo em "Salvar" cria a tarefa uma só vez', async () => {
+  jest.mocked(tarefasApi.create).mockImplementation(neverResolves);
+  renderWithClient(<TasksScreen user={OWNER} />);
+  await screen.findByText('Do dono');
+
+  fireEvent.press(screen.getByRole('button', { name: 'Nova tarefa' }));
+  fireEvent.changeText(screen.getByLabelText('Título'), 'Revisar');
+  fireEvent.press(screen.getByRole('button', { name: 'Salvar' }));
+  fireEvent.press(await screen.findByRole('button', { name: /Enviando/ }));
+
+  await waitFor(() => expect(tarefasApi.create).toHaveBeenCalledTimes(1));
+  expect(screen.getByRole('button', { name: 'Cancelar' }).props.accessibilityState.disabled).toBe(true);
+});
+
+it('FASE2-B1 - clique duplo em "Avançar" troca o status uma só vez', async () => {
+  jest.mocked(tarefasApi.changeStatus).mockImplementation(neverResolves);
+  renderWithClient(<TasksScreen user={OWNER} />);
+  await screen.findByText('Do dono');
+
+  const advance = screen.getAllByRole('button', { name: 'Avançar' })[0];
+  fireEvent.press(advance);
+  await waitFor(() => expect(screen.getAllByRole('button', { name: 'Avançar' })[0].props.accessibilityState.disabled).toBe(true));
+  fireEvent.press(screen.getAllByRole('button', { name: 'Avançar' })[0]);
+
+  await waitFor(() => expect(tarefasApi.changeStatus).toHaveBeenCalledTimes(1));
+});
+
+it('FASE2-B2 - erro do formulário não reaparece na página depois de cancelar', async () => {
+  jest.mocked(tarefasApi.create).mockRejectedValue(new ApiRequestError({ codigo: 'ERRO_INTERNO' }));
+  renderWithClient(<TasksScreen user={OWNER} />);
+  await screen.findByText('Do dono');
+
+  fireEvent.press(screen.getByRole('button', { name: 'Nova tarefa' }));
+  fireEvent.changeText(screen.getByLabelText('Título'), 'Revisar');
+  fireEvent.press(screen.getByRole('button', { name: 'Salvar' }));
+  await waitFor(() => expect(tarefasApi.create).toHaveBeenCalled());
+  fireEvent.press(await screen.findByRole('button', { name: 'Cancelar' }));
+
+  expect(screen.queryByRole('alert')).toBeNull();
+  fireEvent.press(screen.getByRole('button', { name: 'Nova tarefa' }));
+  expect(screen.queryByRole('alert')).toBeNull();
+});
+
+it('FASE2-C10 - tarefa que mudou no servidor recarrega a lista', async () => {
+  jest
+    .mocked(tarefasApi.changeStatus)
+    .mockRejectedValue(new ApiRequestError({ codigo: 'TRANSICAO_STATUS_INVALIDA' }, { status: 409 }));
+  renderWithClient(<TasksScreen user={OWNER} />);
+  await screen.findByText('Do dono');
+  expect(tarefasApi.list).toHaveBeenCalledTimes(1);
+
+  fireEvent.press(screen.getAllByRole('button', { name: 'Avançar' })[0]);
+
+  await waitFor(() => expect(tarefasApi.list).toHaveBeenCalledTimes(2));
+});

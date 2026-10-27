@@ -40,7 +40,7 @@ export function NoTeamScreen() {
             </View>
           ) : null}
           <View style={styles.button}>
-            <PrimaryButton disabled={false} icon="log-out" label={MESSAGES.common.logout} loading={false} onPress={logout} />
+            <PrimaryButton icon="log-out" label={MESSAGES.common.logout} onPress={logout} />
           </View>
         </View>
       </View>

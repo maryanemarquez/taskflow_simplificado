@@ -8,17 +8,17 @@ import { STATUS_META } from '../model/statusMeta';
 import { canManage, STATUS_ORDER } from '../model/taskRules';
 import { useKanbanDrag } from '../model/useKanbanDrag';
 import { Draggable, DropZone } from './dragDrop';
-import type { TaskBoardActions } from './taskBoardTypes';
+import type { TaskBoardActions, TaskBoardBusy } from './taskBoardTypes';
 import { TaskCard } from './TaskCard';
 import { ErrorNotice } from '../../auth/ui/ErrorNotice';
 
-interface KanbanBoardProps extends TaskBoardActions {
+interface KanbanBoardProps extends TaskBoardActions, TaskBoardBusy {
   tasks: Task[];
   user: CurrentUser;
 }
 
 /** Visão Kanban: uma coluna por status; arraste o cartão para a coluna vizinha para mudar o status. */
-export function KanbanBoard({ tasks, user, onChangeStatus, onEdit, onRemove }: KanbanBoardProps) {
+export function KanbanBoard({ tasks, user, isTaskBusy, onChangeStatus, onEdit, onRemove }: KanbanBoardProps) {
   const drag = useKanbanDrag(tasks, user, onChangeStatus);
   return (
     <View style={styles.wrapper}>
@@ -44,12 +44,13 @@ export function KanbanBoard({ tasks, user, onChangeStatus, onEdit, onRemove }: K
               {column.length === 0 ? <Text style={styles.empty}>{MESSAGES.tasks.empty}</Text> : null}
               {column.map((item) => (
                 <Draggable
-                  enabled={canManage(user, item)}
+                  enabled={canManage(user, item) && !isTaskBusy(item.id)}
                   key={item.id}
                   onDragEnd={drag.endDrag}
                   onDragStart={() => drag.startDrag(item.id)}
                 >
                   <TaskCard
+                    busy={isTaskBusy(item.id)}
                     dragging={drag.draggingId === item.id}
                     onChangeStatus={onChangeStatus}
                     onEdit={onEdit}

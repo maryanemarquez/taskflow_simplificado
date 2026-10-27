@@ -12,22 +12,39 @@ interface TaskCardProps {
   task: Task;
   user: CurrentUser;
   dragging?: boolean;
+  /** Há uma ação desta tarefa em andamento: as ações ficam desabilitadas. */
+  busy?: boolean;
   onEdit: (task: Task) => void;
   onRemove: (id: number) => void;
   onChangeStatus: (id: number, status: TaskStatus) => void;
 }
 
-function Action({ label, icon, onPress, danger }: { label: string; icon: IconName; onPress: () => void; danger?: boolean }) {
+interface ActionProps {
+  label: string;
+  icon: IconName;
+  onPress: () => void;
+  danger?: boolean;
+  disabled?: boolean;
+}
+
+function Action({ label, icon, onPress, danger, disabled }: ActionProps) {
   const color = danger ? theme.colors.destructive : theme.colors.primary;
   return (
-    <Pressable accessibilityLabel={label} accessibilityRole="button" onPress={onPress} style={styles.actionButton}>
+    <Pressable
+      accessibilityLabel={label}
+      accessibilityRole="button"
+      accessibilityState={{ disabled: Boolean(disabled) }}
+      disabled={disabled}
+      onPress={onPress}
+      style={[styles.actionButton, disabled && styles.actionDisabled]}
+    >
       <Icon color={color} name={icon} size={14} />
       <Text style={[styles.action, { color }]}>{label}</Text>
     </Pressable>
   );
 }
 
-export function TaskCard({ task, user, dragging, onEdit, onRemove, onChangeStatus }: TaskCardProps) {
+export function TaskCard({ task, user, dragging, busy, onEdit, onRemove, onChangeStatus }: TaskCardProps) {
   const manage = canManage(user, task);
   const previous = neighborStatus(task.status, -1);
   const next = neighborStatus(task.status, 1);
@@ -48,10 +65,10 @@ export function TaskCard({ task, user, dragging, onEdit, onRemove, onChangeStatu
         ) : null}
       </View>
       <View style={styles.actions}>
-        {manage && previous ? <Action icon="arrow-left" label={MESSAGES.tasks.back} onPress={() => onChangeStatus(task.id, previous)} /> : null}
-        {manage && next ? <Action icon="arrow-right" label={MESSAGES.tasks.advance} onPress={() => onChangeStatus(task.id, next)} /> : null}
-        {manage ? <Action icon="edit-2" label={MESSAGES.tasks.edit} onPress={() => onEdit(task)} /> : null}
-        {isOwner(user) ? <Action danger icon="trash-2" label={MESSAGES.tasks.remove} onPress={() => onRemove(task.id)} /> : null}
+        {manage && previous ? <Action disabled={busy} icon="arrow-left" label={MESSAGES.tasks.back} onPress={() => onChangeStatus(task.id, previous)} /> : null}
+        {manage && next ? <Action disabled={busy} icon="arrow-right" label={MESSAGES.tasks.advance} onPress={() => onChangeStatus(task.id, next)} /> : null}
+        {manage ? <Action disabled={busy} icon="edit-2" label={MESSAGES.tasks.edit} onPress={() => onEdit(task)} /> : null}
+        {isOwner(user) ? <Action danger disabled={busy} icon="trash-2" label={MESSAGES.tasks.remove} onPress={() => onRemove(task.id)} /> : null}
       </View>
     </View>
   );
@@ -83,5 +100,6 @@ const styles = StyleSheet.create({
     paddingTop: theme.spacing.medium,
   },
   actionButton: { alignItems: 'center', flexDirection: 'row', gap: theme.spacing.xsmall },
+  actionDisabled: { opacity: theme.states.disabledOpacity },
   action: { fontFamily: theme.typography.semibold, fontSize: theme.typography.label },
 });

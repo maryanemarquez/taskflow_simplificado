@@ -2,15 +2,18 @@ import axios, { isAxiosError, isCancel, type InternalAxiosRequestConfig } from '
 import { REQUEST_ID_HEADER, UNKNOWN_ERROR_CODE, isApiProblem } from './apiContract';
 import { applyErrorPolicy, type RequestInfo } from './errorPolicy';
 import { ApiRequestError, NetworkRequestError } from './httpErrors';
+import { env } from '../config/env';
 import { MESSAGES } from '../messages/messages';
 import { session } from '../session/session';
 
 const AUTHORIZATION_HEADER = 'Authorization';
 const BEARER_PREFIX = 'Bearer ';
+export const REQUEST_TIMEOUT_MS = 15_000;
 const TIMEOUT_CODES: ReadonlySet<string> = new Set(['ECONNABORTED', 'ETIMEDOUT']);
 
 export const httpClient = axios.create({
-  baseURL: process.env.EXPO_PUBLIC_API_URL,
+  baseURL: env.apiUrl,
+  timeout: REQUEST_TIMEOUT_MS,
   headers: { 'Content-Type': 'application/json' },
 });
 
