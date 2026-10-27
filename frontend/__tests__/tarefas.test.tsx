@@ -1,4 +1,3 @@
-import React from 'react';
 import { fireEvent, screen, waitFor } from '@testing-library/react-native';
 import { ApiRequestError } from '../src/core/api/httpErrors';
 import { membrosApi } from '../src/features/membros/api/membrosApi';
@@ -91,6 +90,40 @@ it('HIST-001-tarefa/C02 - Dono escolhe o responsável ao criar', async () => {
   fireEvent.press(screen.getByRole('button', { name: 'Salvar' }));
 
   await waitFor(() => expect(tarefasApi.create).toHaveBeenCalledWith(expect.objectContaining({ responsavelId: 2 })));
+});
+
+it('HIST-001-tarefa/N1 - o Dono já vem escolhido como responsável de uma tarefa nova', async () => {
+  jest.mocked(tarefasApi.create).mockResolvedValue(TASKS[0]);
+  renderWithClient(<TasksScreen user={OWNER} />);
+  await screen.findByText('Do dono');
+
+  fireEvent.press(screen.getByRole('button', { name: 'Nova tarefa' }));
+  const dono = await screen.findByRole('button', { name: 'Dono', selected: true });
+  expect(dono).toBeTruthy();
+  fireEvent.changeText(screen.getByLabelText('Título'), 'Sem escolher');
+  fireEvent.press(screen.getByRole('button', { name: 'Salvar' }));
+
+  await waitFor(() => expect(tarefasApi.create).toHaveBeenCalledWith(expect.objectContaining({ responsavelId: 1 })));
+});
+
+it('HIST-001-tarefa/N1 - editar mantém o responsável da tarefa, sem trocar pelo Dono', async () => {
+  jest.mocked(tarefasApi.update).mockResolvedValue(TASKS[1]);
+  renderWithClient(<TasksScreen user={OWNER} />);
+  await screen.findByText('Da Bia');
+
+  fireEvent.press(screen.getAllByRole('button', { name: 'Editar' })[1]);
+  fireEvent.press(screen.getByRole('button', { name: 'Salvar' }));
+
+  await waitFor(() => expect(tarefasApi.update).toHaveBeenCalledWith(2, expect.objectContaining({ responsavelId: 2 })));
+});
+
+it('HIST-001-tarefa/C07 - título e descrição seguem os limites do backend', async () => {
+  renderWithClient(<TasksScreen user={OWNER} />);
+  await screen.findByText('Do dono');
+
+  fireEvent.press(screen.getByRole('button', { name: 'Nova tarefa' }));
+  expect(screen.getByLabelText('Título').props.maxLength).toBe(150);
+  expect(screen.getByLabelText('Descrição').props.maxLength).toBe(2000);
 });
 
 it('HIST-001-tarefa/C06 - título vazio não é enviado', async () => {
@@ -217,4 +250,131 @@ it('HIST-001-tarefa/C13 - erro do campo prazo vindo da API mostra mensagem clara
   fireEvent.press(screen.getByRole('button', { name: 'Salvar' }));
 
   expect(await screen.findByText('Prazo inválido. Use uma data real no formato DD/MM/AAAA.')).toBeTruthy();
+});
+
+const neverResolves = () => new Promise<never>(() => undefined);
+
+it('FASE2-B1 - clique duplo em "Salvar" cria a tarefa uma só vez', async () => {
+  jest.mocked(tarefasApi.create).mockImplementation(neverResolves);
+  renderWithClient(<TasksScreen user={OWNER} />);
+  await screen.findByText('Do dono');
+
+  fireEvent.press(screen.getByRole('button', { name: 'Nova tarefa' }));
+  fireEvent.changeText(screen.getByLabelText('Título'), 'Revisar');
+  fireEvent.press(screen.getByRole('button', { name: 'Salvar' }));
+  fireEvent.press(await screen.findByRole('button', { name: /Enviando/ }));
+
+  await waitFor(() => expect(tarefasApi.create).toHaveBeenCalledTimes(1));
+  expect(screen.getByRole('button', { name: 'Cancelar' }).props.accessibilityState.disabled).toBe(true);
+});
+
+it('FASE2-B1 - clique duplo em "Avançar" troca o status uma só vez', async () => {
+  jest.mocked(tarefasApi.changeStatus).mockImplementation(neverResolves);
+  renderWithClient(<TasksScreen user={OWNER} />);
+  await screen.findByText('Do dono');
+
+  const advance = screen.getAllByRole('button', { name: 'Avançar' })[0];
+  fireEvent.press(advance);
+  await waitFor(() => expect(screen.getAllByRole('button', { name: 'Avançar' })[0].props.accessibilityState.disabled).toBe(true));
+  fireEvent.press(screen.getAllByRole('button', { name: 'Avançar' })[0]);
+
+  await waitFor(() => expect(tarefasApi.changeStatus).toHaveBeenCalledTimes(1));
+});
+
+it('FASE2-B2 - erro do formulário não reaparece na página depois de cancelar', async () => {
+  jest.mocked(tarefasApi.create).mockRejectedValue(new ApiRequestError({ codigo: 'ERRO_INTERNO' }));
+  renderWithClient(<TasksScreen user={OWNER} />);
+  await screen.findByText('Do dono');
+
+  fireEvent.press(screen.getByRole('button', { name: 'Nova tarefa' }));
+  fireEvent.changeText(screen.getByLabelText('Título'), 'Revisar');
+  fireEvent.press(screen.getByRole('button', { name: 'Salvar' }));
+  await waitFor(() => expect(tarefasApi.create).toHaveBeenCalled());
+  fireEvent.press(await screen.findByRole('button', { name: 'Cancelar' }));
+
+  expect(screen.queryByRole('alert')).toBeNull();
+  fireEvent.press(screen.getByRole('button', { name: 'Nova tarefa' }));
+  expect(screen.queryByRole('alert')).toBeNull();
+});
+
+it('FASE2-C10 - tarefa que mudou no servidor recarrega a lista', async () => {
+  jest
+    .mocked(tarefasApi.changeStatus)
+    .mockRejectedValue(new ApiRequestError({ codigo: 'TRANSICAO_STATUS_INVALIDA' }, { status: 409 }));
+  renderWithClient(<TasksScreen user={OWNER} />);
+  await screen.findByText('Do dono');
+  expect(tarefasApi.list).toHaveBeenCalledTimes(1);
+
+  fireEvent.press(screen.getAllByRole('button', { name: 'Avançar' })[0]);
+
+  await waitFor(() => expect(tarefasApi.list).toHaveBeenCalledTimes(2));
+});
+
+const validationProblem = (campo: string, codigo: string) => ({
+  codigo: 'VALIDACAO',
+  mensagem: 'Um ou mais campos são inválidos.',
+  erros: [{ campo, codigo, mensagem: 'Mensagem genérica do servidor.' }],
+});
+
+it('FASE2-E5 - erro de título vindo da API aparece no campo, sem banner', async () => {
+  jest.mocked(tarefasApi.create).mockRejectedValue(new ApiRequestError(validationProblem('titulo', 'TAMANHO_EXCEDIDO')));
+  renderWithClient(<TasksScreen user={OWNER} />);
+  await screen.findByText('Do dono');
+
+  fireEvent.press(screen.getByRole('button', { name: 'Nova tarefa' }));
+  fireEvent.changeText(screen.getByLabelText('Título'), 'Revisar');
+  fireEvent.press(screen.getByRole('button', { name: 'Salvar' }));
+
+  expect(await screen.findByText('O título pode ter no máximo 150 caracteres.')).toBeTruthy();
+  expect(screen.getAllByRole('alert')).toHaveLength(1);
+});
+
+it('FASE2-E5 - erros de descrição e de responsável aparecem cada um no seu campo', async () => {
+  jest.mocked(tarefasApi.create).mockRejectedValue(
+    new ApiRequestError({
+      codigo: 'VALIDACAO',
+      mensagem: 'Um ou mais campos são inválidos.',
+      erros: [
+        { campo: 'descricao', codigo: 'TAMANHO_EXCEDIDO', mensagem: 'x' },
+        { campo: 'responsavelId', codigo: 'INVALIDO', mensagem: 'y' },
+      ],
+    }),
+  );
+  renderWithClient(<TasksScreen user={OWNER} />);
+  await screen.findByText('Do dono');
+
+  fireEvent.press(screen.getByRole('button', { name: 'Nova tarefa' }));
+  fireEvent.changeText(screen.getByLabelText('Título'), 'Revisar');
+  fireEvent.press(screen.getByRole('button', { name: 'Salvar' }));
+
+  expect(await screen.findByText('A descrição pode ter no máximo 2000 caracteres.')).toBeTruthy();
+  expect(screen.getByText('Escolha um responsável da sua equipe.')).toBeTruthy();
+});
+
+it('FASE2-E5 - o erro por campo some quando a pessoa tenta salvar de novo', async () => {
+  jest
+    .mocked(tarefasApi.create)
+    .mockRejectedValueOnce(new ApiRequestError(validationProblem('titulo', 'TAMANHO_EXCEDIDO')))
+    .mockImplementation(() => new Promise<never>(() => undefined));
+  renderWithClient(<TasksScreen user={OWNER} />);
+  await screen.findByText('Do dono');
+
+  fireEvent.press(screen.getByRole('button', { name: 'Nova tarefa' }));
+  fireEvent.changeText(screen.getByLabelText('Título'), 'Revisar');
+  fireEvent.press(screen.getByRole('button', { name: 'Salvar' }));
+  await screen.findByText('O título pode ter no máximo 150 caracteres.');
+
+  fireEvent.press(screen.getByRole('button', { name: 'Salvar' }));
+
+  await waitFor(() => expect(screen.queryByText('O título pode ter no máximo 150 caracteres.')).toBeNull());
+});
+
+it('FASE2-E5 - erro de campo que o formulário não tem vira mensagem única', async () => {
+  jest.mocked(tarefasApi.changeStatus).mockRejectedValue(new ApiRequestError(validationProblem('status', 'INVALIDO')));
+  renderWithClient(<TasksScreen user={OWNER} />);
+  await screen.findByText('Do dono');
+
+  fireEvent.press(screen.getAllByRole('button', { name: 'Avançar' })[0]);
+
+  expect(await screen.findByText('Mensagem genérica do servidor.')).toBeTruthy();
 });

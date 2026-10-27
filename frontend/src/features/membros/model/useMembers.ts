@@ -1,44 +1,61 @@
 import { useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { errorMessage } from '../../../core/api/httpErrors';
+import { invalidateMemberData } from '../../../core/api/invalidation';
+import { QUERY_KEYS } from '../../../core/api/queryKeys';
+import { useActionFeedback } from '../../../core/api/useActionFeedback';
 import { MESSAGES } from '../../../core/messages/messages';
 import { membrosApi } from '../api/membrosApi';
 
-export const MEMBERS_QUERY_KEY = ['members'] as const;
-const TASKS_QUERY_KEY = ['tasks'] as const;
-const DASHBOARD_QUERY_KEY = ['dashboard'] as const;
-
 export function useMembers() {
-  return useQuery({ queryKey: MEMBERS_QUERY_KEY, queryFn: membrosApi.list });
+  return useQuery({ queryKey: QUERY_KEYS.members, queryFn: membrosApi.list });
 }
 
+/** Adicionar e remover membros. Enquanto uma ação está em andamento, repeti-la é ignorado (clique duplo). */
 export function useMemberActions() {
   const queryClient = useQueryClient();
   const [email, setEmail] = useState('');
-  const [message, setMessage] = useState<string | null>(null);
-  const refresh = () => {
-    setMessage(null);
-    queryClient.invalidateQueries({ queryKey: MEMBERS_QUERY_KEY });
-    queryClient.invalidateQueries({ queryKey: TASKS_QUERY_KEY });
-    queryClient.invalidateQueries({ queryKey: DASHBOARD_QUERY_KEY });
+
+  // Remover um membro reatribui as tarefas dele ao Dono: membros, tarefas e dashboard mudam juntos.
+  const reload = () => invalidateMemberData(queryClient);
+  const feedback = useActionFeedback({ onStale: reload });
+  const onChanged = () => {
+    feedback.clear();
+    reload();
   };
-  const onError = (error: unknown) => setMessage(errorMessage(error, MESSAGES.errors.generic));
+
   const addMutation = useMutation({
-    mutationFn: (email: string) => membrosApi.add(email),
+    mutationFn: (value: string) => membrosApi.add(value),
     onSuccess: () => {
       setEmail('');
-      refresh();
+      onChanged();
     },
-    onError,
+    // E-mail inexistente ou já em outra equipe: a lista na tela continua válida, não há o que recarregar.
+    onError: (error) => feedback.handleError(error, { refreshStale: false }),
   });
-  const removeMutation = useMutation({ mutationFn: (id: number) => membrosApi.remove(id), onSuccess: refresh, onError });
+  const removeMutation = useMutation({
+    mutationFn: (id: number) => membrosApi.remove(id),
+    onSuccess: onChanged,
+    // Membro já removido por outra pessoa, ou permissão alterada: a lista na tela está velha.
+    onError: (error) => feedback.handleError(error),
+  });
+
+  const isAdding = addMutation.isPending;
+  const removingId = removeMutation.isPending ? (removeMutation.variables ?? null) : null;
 
   const add = () => {
+    if (isAdding) {
+      return;
+    }
     if (!email.trim()) {
-      setMessage(MESSAGES.members.emailRequired);
+      feedback.showMessage(MESSAGES.members.emailRequired);
       return;
     }
     addMutation.mutate(email.trim());
   };
-  return { email, setEmail, message, add, remove: (id: number) => removeMutation.mutate(id) };
+  const remove = (id: number) => {
+    if (removingId === null) {
+      removeMutation.mutate(id);
+    }
+  };
+  return { email, setEmail, message: feedback.message, isAdding, removingId, add, remove };
 }

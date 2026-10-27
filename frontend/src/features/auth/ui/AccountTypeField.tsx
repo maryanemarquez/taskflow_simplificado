@@ -1,15 +1,16 @@
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { MESSAGES } from '../../../core/messages/messages';
 import { theme } from '../../../core/theme/theme';
-import type { AccountType } from '../model/authTypes';
+import { formStyles } from '../../../core/ui/formStyles';
+import type { Role } from '../model/authTypes';
 
 interface AccountTypeFieldProps {
-  value: AccountType | null;
+  value: Role | null;
   error?: string;
-  onChange: (type: AccountType) => void;
+  onChange: (type: Role) => void;
 }
 
-const OPTIONS: { type: AccountType; label: string; hint: string }[] = [
+const OPTIONS: { type: Role; label: string; hint: string }[] = [
   { type: 'DONO', label: MESSAGES.registration.typeOwner, hint: MESSAGES.registration.typeOwnerHint },
   { type: 'MEMBRO', label: MESSAGES.registration.typeMember, hint: MESSAGES.registration.typeMemberHint },
 ];
@@ -18,7 +19,7 @@ const OPTIONS: { type: AccountType; label: string; hint: string }[] = [
 export function AccountTypeField({ value, error, onChange }: AccountTypeFieldProps) {
   return (
     <View style={styles.field}>
-      <Text style={styles.label}>{MESSAGES.registration.typeLabel}</Text>
+      <Text style={formStyles.label}>{MESSAGES.registration.typeLabel}</Text>
       {OPTIONS.map((option) => {
         const selected = value === option.type;
         return (
@@ -35,18 +36,13 @@ export function AccountTypeField({ value, error, onChange }: AccountTypeFieldPro
           </Pressable>
         );
       })}
-      {error ? <Text accessibilityRole="alert" style={styles.error}>{error}</Text> : null}
+      {error ? <Text accessibilityRole="alert" style={formStyles.error}>{error}</Text> : null}
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   field: { gap: theme.spacing.small },
-  label: {
-    color: theme.colors.text,
-    fontFamily: theme.typography.semibold,
-    fontSize: theme.typography.label,
-  },
   option: {
     backgroundColor: theme.colors.surface,
     borderColor: theme.colors.border,
@@ -64,11 +60,6 @@ const styles = StyleSheet.create({
   selectedLabel: { color: theme.colors.primary },
   hint: {
     color: theme.colors.textSecondary,
-    fontFamily: theme.typography.regular,
-    fontSize: theme.typography.label,
-  },
-  error: {
-    color: theme.colors.destructive,
     fontFamily: theme.typography.regular,
     fontSize: theme.typography.label,
   },

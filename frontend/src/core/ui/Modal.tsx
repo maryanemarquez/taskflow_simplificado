@@ -2,6 +2,7 @@ import type { ReactNode } from 'react';
 import { Modal as NativeModal, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { MESSAGES } from '../messages/messages';
 import { theme } from '../theme/theme';
+import { absoluteFillStyle } from './overlayStyles';
 import { Icon } from './Icon';
 
 interface ModalProps {
@@ -32,7 +33,7 @@ export function Modal({ title, onClose, children }: ModalProps) {
 
 const styles = StyleSheet.create({
   overlay: { alignItems: 'center', flex: 1, justifyContent: 'center', padding: theme.spacing.large },
-  backdrop: { ...StyleSheet.absoluteFill as object, backgroundColor: theme.colors.overlay },
+  backdrop: { ...absoluteFillStyle, backgroundColor: theme.colors.overlay },
   dialog: {
     backgroundColor: theme.colors.surface,
     borderRadius: theme.radii.xlarge,
@@ -50,6 +51,6 @@ const styles = StyleSheet.create({
     padding: theme.spacing.large,
     paddingHorizontal: theme.spacing.xlarge,
   },
-  title: { color: theme.colors.text, fontFamily: theme.typography.bold, fontSize: theme.typography.body + 3 },
+  title: { color: theme.colors.text, fontFamily: theme.typography.bold, fontSize: theme.typography.modalTitle },
   body: { padding: theme.spacing.xlarge },
 });

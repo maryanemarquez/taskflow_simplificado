@@ -6,18 +6,18 @@ import { MESSAGES } from '../../../core/messages/messages';
 import { session } from '../../../core/session/session';
 import { authApi } from '../api/authApi';
 import type { LoginPayload } from './authTypes';
+import { ROUTES } from '../../../core/routes';
 
-const HOME_ROUTE = '/';
 
 export function useLogin() {
   const [form, setForm] = useState<LoginPayload>({ email: '', senha: '' });
   const queryClient = useQueryClient();
   const mutation = useMutation({
-    mutationFn: (input: Parameters<typeof authApi.login>[0]) => authApi.login(input),
+    mutationFn: (input: LoginPayload) => authApi.login(input),
     onSuccess: (response) => {
       queryClient.clear();
-      session.setToken(response.accessToken);
-      router.replace(HOME_ROUTE);
+      session.setToken(response.accessToken, response.accessTokenExpiraEm);
+      router.replace(ROUTES.home);
     },
   });
 
@@ -27,6 +27,7 @@ export function useLogin() {
 
   const submit = () => mutation.mutate({ email: form.email.trim().toLowerCase(), senha: form.senha });
 
-  const message = mutation.error ? errorMessage(mutation.error, MESSAGES.login.invalidCredentials) : null;
+  // Credencial inválida chega da API (`CREDENCIAIS_INVALIDAS`); falha de rede tem texto próprio.
+  const message = mutation.error ? errorMessage(mutation.error, MESSAGES.errors.generic) : null;
   return { form, updateField, submit, isSubmitting: mutation.isPending, errorMessage: message };
 }

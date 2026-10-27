@@ -15,6 +15,7 @@ export interface CalendarCell {
   inMonth: boolean;
 }
 
+const MS_PER_DAY = 86_400_000;
 const pad = (value: number, size: number) => String(value).padStart(size, '0');
 
 export function todayYmd(now: Date = new Date()): Ymd {
@@ -85,7 +86,7 @@ export function monthMatrix({ year, month }: YearMonth): CalendarCell[][] {
   for (let week = 0; week < 6; week += 1) {
     const row: CalendarCell[] = [];
     for (let weekday = 0; weekday < 7; weekday += 1) {
-      const current = new Date(start + (week * 7 + weekday) * 86_400_000);
+      const current = new Date(start + (week * 7 + weekday) * MS_PER_DAY);
       const date = { year: current.getUTCFullYear(), month: current.getUTCMonth() + 1, day: current.getUTCDate() };
       row.push({ date, inMonth: date.month === month });
     }

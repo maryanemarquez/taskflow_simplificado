@@ -1,24 +1,28 @@
 import { StyleSheet, Text, View } from 'react-native';
 import { Redirect } from 'expo-router';
 import { MESSAGES } from '../../../core/messages/messages';
-import { useToken } from '../../../core/session/session';
 import { theme } from '../../../core/theme/theme';
 import { Brand } from '../../../core/ui/Brand';
 import { Icon } from '../../../core/ui/Icon';
-import { useCurrentUser } from '../../auth/model/authQueries';
+import { SessionError } from '../../shell/ui/SessionNotice';
 import { useLogout } from '../../auth/model/useLogout';
-import { PrimaryButton } from '../../auth/ui/PrimaryButton';
+import { useRequireSession } from '../../auth/model/useRequireSession';
+import { PrimaryButton } from '../../../core/ui/PrimaryButton';
+import { ROUTES } from '../../../core/routes';
 
 export function NoTeamScreen() {
-  const token = useToken();
-  const { data, isError } = useCurrentUser();
+  const session = useRequireSession();
   const logout = useLogout();
-  if (!token || isError) {
-    return <Redirect href="/login" />;
+  if (session.status === 'anonymous') {
+    return <Redirect href={ROUTES.login} />;
   }
-  if (data?.equipe) {
-    return <Redirect href="/dashboard" />;
+  if (session.status === 'ready') {
+    return <Redirect href={ROUTES.dashboard} />;
   }
+  if (session.status === 'error') {
+    return <SessionError message={session.message} onRetry={session.retry} />;
+  }
+  const email = session.status === 'no-team' ? session.user.usuario.email : null;
   return (
     <View style={styles.page}>
       <View style={styles.header}>
@@ -31,13 +35,13 @@ export function NoTeamScreen() {
           </View>
           <Text accessibilityRole="header" style={styles.title}>{MESSAGES.noTeam.title}</Text>
           <Text style={styles.text}>{MESSAGES.noTeam.text}</Text>
-          {data ? (
+          {email ? (
             <View style={styles.email}>
-              <Text style={styles.emailText}>{MESSAGES.noTeam.yourEmail(data.usuario.email)}</Text>
+              <Text style={styles.emailText}>{MESSAGES.noTeam.yourEmail(email)}</Text>
             </View>
           ) : null}
           <View style={styles.button}>
-            <PrimaryButton disabled={false} icon="log-out" label={MESSAGES.common.logout} loading={false} onPress={logout} />
+            <PrimaryButton icon="log-out" label={MESSAGES.common.logout} onPress={logout} />
           </View>
         </View>
       </View>
@@ -65,9 +69,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     backgroundColor: theme.colors.primarySoft,
     borderRadius: theme.radii.xlarge,
-    height: 52,
+    height: theme.layout.iconBoxXLarge,
     justifyContent: 'center',
-    width: 52,
+    width: theme.layout.iconBoxXLarge,
   },
   title: { color: theme.colors.text, fontFamily: theme.typography.bold, fontSize: theme.typography.pageHeading, textAlign: 'center' },
   text: { color: theme.colors.textSecondary, fontFamily: theme.typography.regular, fontSize: theme.typography.body, lineHeight: 22, textAlign: 'center' },

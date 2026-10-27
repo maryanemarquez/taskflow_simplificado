@@ -42,11 +42,11 @@ const styles = StyleSheet.create({
   icon: {
     alignItems: 'center',
     borderRadius: theme.radii.xlarge,
-    height: 44,
+    height: theme.layout.iconBox,
     justifyContent: 'center',
-    width: 44,
+    width: theme.layout.iconBox,
   },
   text: { gap: theme.spacing.xsmall },
   label: { color: theme.colors.textSecondary, fontFamily: theme.typography.semibold, fontSize: theme.typography.small },
-  count: { fontFamily: theme.typography.bold, fontSize: theme.typography.heading + 5 },
+  count: { fontFamily: theme.typography.bold, fontSize: theme.typography.statValue },
 });

@@ -1,26 +1,51 @@
 import { useState } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { router } from 'expo-router';
-import { errorMessage } from '../../../core/api/httpErrors';
+import { ApiRequestError, errorMessage, fieldMessages } from '../../../core/api/httpErrors';
 import { MESSAGES } from '../../../core/messages/messages';
 import { session } from '../../../core/session/session';
 import { authApi } from '../api/authApi';
-import type { AccountType, RegistrationForm } from './authTypes';
+import type { RegistrationForm, RegistrationPayload, Role } from './authTypes';
 import { validateRegistration, type RegistrationErrors, type RegistrationField } from './registrationValidation';
+import { ROUTES } from '../../../core/routes';
 
 const EMPTY_FORM: RegistrationForm = { nome: '', email: '', senha: '', tipo: null };
-const HOME_ROUTE = '/';
+const FORM_FIELDS: RegistrationField[] = ['nome', 'email', 'senha', 'tipo'];
+
+/** Erros que a API aponta por campo; `EMAIL_JA_CADASTRADO` não traz `erros[]`, mas pertence ao campo e-mail. */
+function serverFieldErrors(error: unknown): RegistrationErrors {
+  const messages = fieldMessages(error);
+  if (error instanceof ApiRequestError && error.codigo === 'EMAIL_JA_CADASTRADO') {
+    messages.email = error.message;
+  }
+  const errors: RegistrationErrors = {};
+  for (const field of FORM_FIELDS) {
+    if (messages[field]) {
+      errors[field] = messages[field];
+    }
+  }
+  return errors;
+}
 
 export function useRegistration() {
   const [form, setForm] = useState(EMPTY_FORM);
   const [errors, setErrors] = useState<RegistrationErrors>({});
+  const [banner, setBanner] = useState<string | null>(null);
   const queryClient = useQueryClient();
   const mutation = useMutation({
-    mutationFn: (input: Parameters<typeof authApi.register>[0]) => authApi.register(input),
+    mutationFn: (input: RegistrationPayload) => authApi.register(input),
     onSuccess: (response) => {
       queryClient.clear();
-      session.setToken(response.accessToken);
-      router.replace(HOME_ROUTE);
+      session.setToken(response.accessToken, response.accessTokenExpiraEm);
+      router.replace(ROUTES.home);
+    },
+    onError: (error) => {
+      const fieldErrors = serverFieldErrors(error);
+      if (Object.keys(fieldErrors).length > 0) {
+        setErrors((current) => ({ ...current, ...fieldErrors }));
+      } else {
+        setBanner(errorMessage(error, MESSAGES.registration.genericError));
+      }
     },
   });
 
@@ -29,7 +54,7 @@ export function useRegistration() {
     setErrors((current) => ({ ...current, [field]: undefined }));
   };
 
-  const updateType = (tipo: AccountType) => {
+  const updateType = (tipo: Role) => {
     setForm((current) => ({ ...current, tipo }));
     setErrors((current) => ({ ...current, tipo: undefined }));
   };
@@ -37,11 +62,11 @@ export function useRegistration() {
   const submit = () => {
     const validationErrors = validateRegistration(form);
     setErrors(validationErrors);
+    setBanner(null);
     if (Object.keys(validationErrors).length === 0 && form.tipo) {
       mutation.mutate({ ...form, tipo: form.tipo, nome: form.nome.trim(), email: form.email.trim().toLowerCase() });
     }
   };
 
-  const message = mutation.error ? errorMessage(mutation.error, MESSAGES.registration.genericError) : null;
-  return { form, errors, updateField, updateType, submit, isSubmitting: mutation.isPending, errorMessage: message };
+  return { form, errors, updateField, updateType, submit, isSubmitting: mutation.isPending, errorMessage: banner };
 }

@@ -1,25 +1,7 @@
-import { StyleSheet, Text, View } from 'react-native';
 import { Redirect } from 'expo-router';
-import { useCurrentUser } from '../src/features/auth/model/authQueries';
-import { MESSAGES } from '../src/core/messages/messages';
-import { useToken } from '../src/core/session/session';
+import { ROUTES } from '../src/core/routes';
+import { SessionGate } from '../src/features/shell/ui/SessionGate';
 
 export default function IndexRoute() {
-  const token = useToken();
-  const { data, isError } = useCurrentUser();
-  if (!token || isError) {
-    return <Redirect href="/login" />;
-  }
-  if (!data) {
-    return (
-      <View style={styles.loading}>
-        <Text>{MESSAGES.common.loading}</Text>
-      </View>
-    );
-  }
-  return <Redirect href={data.equipe ? '/dashboard' : '/sem-equipe'} />;
+  return <SessionGate ready={() => <Redirect href={ROUTES.dashboard} />} />;
 }
-
-const styles = StyleSheet.create({
-  loading: { alignItems: 'center', flex: 1, justifyContent: 'center' },
-});

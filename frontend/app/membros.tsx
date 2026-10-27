@@ -1,4 +1,4 @@
-import { Protected } from '../src/core/ui/Protected';
+import { Protected } from '../src/features/shell/ui/Protected';
 import { MembersScreen } from '../src/features/membros/ui/MembersScreen';
 
 export default function MembersRoute() {

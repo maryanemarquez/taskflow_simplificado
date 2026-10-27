@@ -3,16 +3,19 @@
   "compilerOptions": {
     "strict": true,
     "noUnusedLocals": true,
-    "noUnusedParameters": true
+    "noUnusedParameters": true,
+    "types": ["jest", "node"]
   },
   "include": [
     "app/**/*.ts",
     "app/**/*.tsx",
     "src/**/*.ts",
-    "src/**/*.tsx"
+    "src/**/*.tsx",
+    "__tests__/**/*.ts",
+    "__tests__/**/*.tsx",
+    "jest.setup.ts"
   ],
   "exclude": [
-    "node_modules",
-    "__tests__"
+    "node_modules"
   ]
 }

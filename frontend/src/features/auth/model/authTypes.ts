@@ -1,15 +1,15 @@
-/** Papel da conta escolhido no cadastro: DONO cria a própria equipe; MEMBRO entra numa equipe de um Dono. */
-export type AccountType = 'DONO' | 'MEMBRO';
+/** Papel da pessoa: DONO cria a própria equipe (e o escolhe no cadastro); MEMBRO entra numa equipe de um Dono. */
+export type Role = 'DONO' | 'MEMBRO';
 
 export interface RegistrationPayload {
   nome: string;
   email: string;
   senha: string;
-  tipo: AccountType;
+  tipo: Role;
 }
 
 /** Formulário de cadastro: o tipo começa vazio e precisa ser escolhido. */
-export type RegistrationForm = Omit<RegistrationPayload, 'tipo'> & { tipo: AccountType | null };
+export type RegistrationForm = Omit<RegistrationPayload, 'tipo'> & { tipo: Role | null };
 
 export interface LoginPayload {
   email: string;
@@ -21,8 +21,6 @@ export interface SessionResponse {
   accessToken: string;
   accessTokenExpiraEm: string;
 }
-
-export type Role = 'DONO' | 'MEMBRO';
 
 export interface CurrentUser {
   usuario: {

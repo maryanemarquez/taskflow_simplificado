@@ -1,9 +1,10 @@
-import React from 'react';
 import { Text } from 'react-native';
 import { fireEvent, screen, waitFor } from '@testing-library/react-native';
 import { router } from 'expo-router';
+import { NetworkRequestError } from '../src/core/api/httpErrors';
 import { session } from '../src/core/session/session';
-import { Protected } from '../src/core/ui/Protected';
+import { Protected } from '../src/features/shell/ui/Protected';
+import { useSessionUser } from '../src/features/auth/model/SessionUserContext';
 import { authApi } from '../src/features/auth/api/authApi';
 import { renderWithClient, MEMBER, OWNER, WITHOUT_TEAM } from './testUtils';
 
@@ -19,8 +20,17 @@ jest.mock('../src/features/auth/api/authApi', () => ({
   authApi: { register: jest.fn(), login: jest.fn(), currentUser: jest.fn() },
 }));
 
+function ProtectedContent() {
+  const user = useSessionUser();
+  return <Text>{`conteudo de ${user.usuario.nome}`}</Text>;
+}
+
 const renderProtected = () =>
-  renderWithClient(<Protected>{(user) => <Text>{`conteudo de ${user.usuario.nome}`}</Text>}</Protected>);
+  renderWithClient(
+    <Protected>
+      <ProtectedContent />
+    </Protected>,
+  );
 
 beforeEach(() => {
   jest.resetAllMocks();
@@ -50,6 +60,34 @@ it('HIST-001-auth/C13 - "Sair" remove o token e volta ao login', async () => {
   jest.mocked(authApi.currentUser).mockResolvedValue(OWNER);
   renderProtected();
   await screen.findByText('conteudo de Dono');
+
+  fireEvent.press(screen.getByRole('button', { name: 'Sair' }));
+
+  await waitFor(() => expect(router.replace).toHaveBeenCalledWith('/login'));
+  expect(session.getToken()).toBeNull();
+});
+
+it('HIST-001-auth/C13 - falha de rede ao carregar a sessão mostra erro com nova tentativa, sem ir ao login', async () => {
+  session.setToken('token-teste');
+  jest.mocked(authApi.currentUser).mockRejectedValueOnce(new NetworkRequestError('network')).mockResolvedValue(OWNER);
+  renderProtected();
+
+  expect(
+    await screen.findByText('Não foi possível conectar ao servidor. Verifique sua conexão e tente novamente.'),
+  ).toBeTruthy();
+  expect(screen.queryByText('redirect:/login')).toBeNull();
+  expect(session.getToken()).toBe('token-teste');
+
+  fireEvent.press(screen.getByRole('button', { name: 'Tentar novamente' }));
+
+  expect(await screen.findByText('conteudo de Dono')).toBeTruthy();
+});
+
+it('HIST-001-auth/C13 - na tela de erro da sessão ainda é possível sair', async () => {
+  session.setToken('token-teste');
+  jest.mocked(authApi.currentUser).mockRejectedValue(new NetworkRequestError('timeout'));
+  renderProtected();
+  await screen.findByText('O servidor demorou para responder. Tente novamente.');
 
   fireEvent.press(screen.getByRole('button', { name: 'Sair' }));
 

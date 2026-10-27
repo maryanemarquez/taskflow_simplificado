@@ -2,14 +2,16 @@ import { useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { MESSAGES } from '../../../core/messages/messages';
 import { theme } from '../../../core/theme/theme';
+import { PageHeader } from '../../../core/ui/PageHeader';
 import { EmptyState } from '../../../core/ui/EmptyState';
 import { Icon, type IconName } from '../../../core/ui/Icon';
+import { QueryStatus } from '../../../core/ui/LoadError';
 import { Modal } from '../../../core/ui/Modal';
 import type { CurrentUser } from '../../auth/model/authTypes';
-import { ErrorNotice } from '../../auth/ui/ErrorNotice';
+import { ErrorNotice } from '../../../core/ui/ErrorNotice';
 import { useMembers } from '../../membros/model/useMembers';
 import type { Task, TaskInput } from '../api/tarefasApi';
-import { isOwner } from '../model/taskRules';
+import { isOwner } from '../../auth/model/roles';
 import { useTaskActions, useTasks } from '../model/useTasks';
 import { useTaskView, type TaskView } from '../model/useTaskView';
 import { KanbanBoard } from './KanbanBoard';
@@ -41,16 +43,33 @@ export function TasksScreen({ user }: { user: CurrentUser }) {
   const task = editing && editing !== 'new' ? editing : null;
   const save = (input: TaskInput) => (task ? actions.update(task.id, input) : actions.create(input));
   const items = tasks.data ?? [];
-  const board = { onChangeStatus: actions.changeStatus, onEdit: setEditing, onRemove: actions.remove };
+  // Abrir ou fechar o formulário descarta o erro anterior: ele pertence à tentativa que o gerou.
+  const openEditor = (next: Exclude<Editing, null>) => {
+    actions.clearMessage();
+    setEditing(next);
+  };
+  const closeEditor = () => {
+    actions.clearMessage();
+    setEditing(null);
+  };
+  const board = { isTaskBusy: actions.isTaskBusy, onChangeStatus: actions.changeStatus, onEdit: openEditor, onRemove: actions.remove };
+
+  const renderItems = () => {
+    if (items.length === 0) {
+      return (
+        <EmptyState icon="folder" text={MESSAGES.tasks.emptyText} title={MESSAGES.tasks.emptyTitle}>
+          <NewTaskButton onPress={() => openEditor('new')} />
+        </EmptyState>
+      );
+    }
+    return view === 'KANBAN' ? <KanbanBoard tasks={items} user={user} {...board} /> : <TaskList tasks={items} user={user} {...board} />;
+  };
 
   return (
     <View style={styles.page}>
       <View style={styles.header}>
-        <View style={styles.heading}>
-          <Text accessibilityRole="header" style={styles.title}>{MESSAGES.tasks.title}</Text>
-          <Text style={styles.subtitle}>{MESSAGES.tasks.subtitle(items.length)}</Text>
-        </View>
-        <NewTaskButton onPress={() => setEditing('new')} />
+        <PageHeader subtitle={tasks.data ? MESSAGES.tasks.subtitle(items.length) : undefined} title={MESSAGES.tasks.title} />
+        <NewTaskButton onPress={() => openEditor('new')} />
       </View>
       <View accessibilityLabel={MESSAGES.tasks.viewLabel} style={styles.toggle}>
         {VIEWS.map((option) => {
@@ -70,26 +89,27 @@ export function TasksScreen({ user }: { user: CurrentUser }) {
         })}
       </View>
       {!editing && actions.message ? <ErrorNotice message={actions.message} /> : null}
-      {tasks.data && items.length === 0 ? (
-        <EmptyState icon="folder" text={MESSAGES.tasks.emptyText} title={MESSAGES.tasks.emptyTitle}>
-          <NewTaskButton onPress={() => setEditing('new')} />
-        </EmptyState>
-      ) : view === 'KANBAN' ? (
-        <KanbanBoard tasks={items} user={user} {...board} />
-      ) : (
-        <TaskList tasks={items} user={user} {...board} />
-      )}
+      <QueryStatus
+        data={tasks.data}
+        error={tasks.error}
+        fallback={MESSAGES.tasks.loadError}
+        isError={tasks.isError}
+        onRetry={() => void tasks.refetch()}
+      />
+      {tasks.data ? renderItems() : null}
       {editing ? (
         <Modal
-          onClose={() => setEditing(null)}
+          onClose={closeEditor}
           title={task ? MESSAGES.tasks.editTaskTitle : MESSAGES.tasks.newTaskTitle}
         >
           <TaskForm
             key={task?.id ?? 'new'}
             members={isOwner(user) ? (members.data ?? []) : null}
+            fieldErrors={actions.fieldErrors}
             message={actions.message}
-            onCancel={() => setEditing(null)}
+            onCancel={closeEditor}
             onSubmit={save}
+            submitting={actions.isSaving}
             task={task}
           />
         </Modal>
@@ -101,9 +121,6 @@ export function TasksScreen({ user }: { user: CurrentUser }) {
 const styles = StyleSheet.create({
   page: { gap: theme.spacing.xlarge },
   header: { alignItems: 'center', flexDirection: 'row', flexWrap: 'wrap', gap: theme.spacing.large, justifyContent: 'space-between' },
-  heading: { gap: theme.spacing.xsmall },
-  title: { color: theme.colors.text, fontFamily: theme.typography.bold, fontSize: theme.typography.pageHeading + 4 },
-  subtitle: { color: theme.colors.textSecondary, fontFamily: theme.typography.regular, fontSize: theme.typography.body },
   newTask: {
     alignItems: 'center',
     backgroundColor: theme.colors.primary,
@@ -126,7 +143,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     borderRadius: theme.radii.medium,
     flexDirection: 'row',
-    gap: theme.spacing.small - 2,
+    gap: theme.spacing.tight,
     paddingHorizontal: theme.spacing.large,
     paddingVertical: theme.spacing.small,
   },

@@ -1,25 +1,27 @@
 import { Pressable, StyleSheet, Text } from 'react-native';
-import { MESSAGES } from '../../../core/messages/messages';
-import { theme } from '../../../core/theme/theme';
-import { Icon, type IconName } from '../../../core/ui/Icon';
+import { MESSAGES } from '../messages/messages';
+import { theme } from '../theme/theme';
+import { Icon, type IconName } from './Icon';
 
 interface PrimaryButtonProps {
   label: string;
-  loading: boolean;
-  disabled: boolean;
+  loading?: boolean;
+  disabled?: boolean;
   onPress: () => void;
   icon?: IconName;
 }
 
-export function PrimaryButton({ label, loading, disabled, onPress, icon }: PrimaryButtonProps) {
+export function PrimaryButton({ label, loading = false, disabled = false, onPress, icon }: PrimaryButtonProps) {
+  const inactive = disabled || loading;
   return (
     <Pressable
       accessibilityRole="button"
-      disabled={disabled}
+      accessibilityState={{ disabled: inactive, busy: loading }}
+      disabled={inactive}
       onPress={onPress}
-      style={({ pressed }) => [styles.button, pressed && styles.pressed, disabled && styles.disabled]}
+      style={({ pressed }) => [styles.button, pressed && styles.pressed, inactive && styles.disabled]}
     >
-      <Text style={styles.label}>{loading ? MESSAGES.registration.loading : label}</Text>
+      <Text style={styles.label}>{loading ? MESSAGES.common.sending : label}</Text>
       {icon && !loading ? <Icon color={theme.colors.surface} name={icon} size={16} /> : null}
     </Pressable>
   );

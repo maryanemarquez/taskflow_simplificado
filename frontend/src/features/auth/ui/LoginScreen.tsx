@@ -1,37 +1,45 @@
 import { StyleSheet, View } from 'react-native';
-import { router } from 'expo-router';
+import { FIELD_LIMITS } from '../../../core/api/apiContract';
 import { MESSAGES } from '../../../core/messages/messages';
+import { ROUTES } from '../../../core/routes';
 import { theme } from '../../../core/theme/theme';
+import { useSessionExpired } from '../../../core/session/sessionNotice';
 import { useLogin } from '../model/useLogin';
-import { AuthField } from './AuthField';
+import { FormField } from '../../../core/ui/FormField';
 import { AuthLayout } from './AuthLayout';
-import { ErrorNotice } from './ErrorNotice';
-import { LinkButton } from './LinkButton';
-import { PrimaryButton } from './PrimaryButton';
+import { ErrorNotice } from '../../../core/ui/ErrorNotice';
+import { PrimaryButton } from '../../../core/ui/PrimaryButton';
 
 export function LoginScreen() {
   const login = useLogin();
+  const sessionExpired = useSessionExpired();
   return (
     <AuthLayout
       icon="lock"
       subtitle={MESSAGES.login.subtitle}
       title={MESSAGES.login.title}
-      topLink={{ prompt: MESSAGES.login.noAccount, label: MESSAGES.login.signUp, route: '/cadastro' }}
+      topLink={{ prompt: MESSAGES.login.noAccount, label: MESSAGES.login.signUp, route: ROUTES.register }}
     >
       <View style={styles.form}>
-        <AuthField
+        {sessionExpired ? <ErrorNotice message={MESSAGES.session.expired} /> : null}
+        <FormField
           field={{
             label: MESSAGES.registration.email,
             value: login.form.email,
             keyboardType: 'email-address',
+            autoComplete: 'email',
+            textContentType: 'emailAddress',
+            maxLength: FIELD_LIMITS.email,
             onChangeText: (value) => login.updateField('email', value),
           }}
         />
-        <AuthField
+        <FormField
           field={{
             label: MESSAGES.registration.password,
             value: login.form.senha,
             secureTextEntry: true,
+            autoComplete: 'current-password',
+            textContentType: 'password',
             onChangeText: (value) => login.updateField('senha', value),
           }}
         />
@@ -43,7 +51,6 @@ export function LoginScreen() {
           loading={login.isSubmitting}
           onPress={login.submit}
         />
-        <LinkButton label={MESSAGES.login.createAccount} onPress={() => router.replace('/cadastro')} />
       </View>
     </AuthLayout>
   );

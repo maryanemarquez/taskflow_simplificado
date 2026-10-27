@@ -1,11 +1,14 @@
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { QueryClientProvider } from '@tanstack/react-query';
 import { Manrope_400Regular, Manrope_600SemiBold, Manrope_700Bold } from '@expo-google-fonts/manrope';
 import { useFonts } from 'expo-font';
-import { Stack } from 'expo-router';
+import { Stack, type ErrorBoundaryProps } from 'expo-router';
+import { queryClient } from '../src/core/api/queryClient';
+import { RenderError } from '../src/core/ui/RenderError';
 
-const queryClient = new QueryClient({
-  defaultOptions: { queries: { retry: false }, mutations: { retry: false } },
-});
+/** O Expo Router mostra este componente quando uma tela falha ao ser desenhada. */
+export function ErrorBoundary({ retry }: ErrorBoundaryProps) {
+  return <RenderError onRetry={retry} />;
+}
 
 export default function RootLayout() {
   const [fontsLoaded, fontError] = useFonts({

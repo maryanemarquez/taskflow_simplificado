@@ -9,4 +9,9 @@ module.exports = [
       'no-unreachable': 'error',
     },
   },
+  {
+    // O logger é o único ponto de saída para o console.
+    files: ['src/core/log/logger.ts'],
+    rules: { 'no-console': 'off' },
+  },
 ];

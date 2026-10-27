@@ -1,36 +1,29 @@
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
 import { MESSAGES } from '../../../core/messages/messages';
 import { theme } from '../../../core/theme/theme';
 import { useViewport } from '../../../core/theme/useViewport';
 import { Avatar } from '../../../core/ui/Avatar';
-import { Icon, type IconName } from '../../../core/ui/Icon';
+import { Icon } from '../../../core/ui/Icon';
 import type { CurrentUser } from '../../auth/model/authTypes';
 import type { Task } from '../api/tarefasApi';
 import { isoToBr } from '../model/dateFormat';
-import { canManage, isOwner, neighborStatus } from '../model/taskRules';
+import { TaskActions } from './TaskActions';
 import type { TaskBoardActions } from './taskBoardTypes';
+
+const ASSIGNEE_COLUMN_WIDTH = 150;
+const DUE_COLUMN_WIDTH = 140;
+const ACTIONS_COLUMN_WIDTH = 330;
 
 interface TaskRowProps extends TaskBoardActions {
   task: Task;
   user: CurrentUser;
-}
-
-function Action({ label, icon, onPress, danger }: { label: string; icon: IconName; onPress: () => void; danger?: boolean }) {
-  const color = danger ? theme.colors.destructive : theme.colors.primary;
-  return (
-    <Pressable accessibilityLabel={label} accessibilityRole="button" onPress={onPress} style={styles.action}>
-      <Icon color={color} name={icon} size={14} />
-      <Text style={[styles.actionLabel, { color }]}>{label}</Text>
-    </Pressable>
-  );
+  /** Há uma ação desta tarefa em andamento: as ações ficam desabilitadas. */
+  busy?: boolean;
 }
 
 /** Uma tarefa por linha: título e descrição, responsável, prazo e ações. */
-export function TaskRow({ task, user, onChangeStatus, onEdit, onRemove }: TaskRowProps) {
+export function TaskRow({ task, user, busy, onChangeStatus, onEdit, onRemove }: TaskRowProps) {
   const { isMobile } = useViewport();
-  const manage = canManage(user, task);
-  const previous = neighborStatus(task.status, -1);
-  const next = neighborStatus(task.status, 1);
   return (
     <View style={[styles.row, isMobile && styles.rowMobile]}>
       <View style={styles.main}>
@@ -49,12 +42,7 @@ export function TaskRow({ task, user, onChangeStatus, onEdit, onRemove }: TaskRo
           </>
         ) : null}
       </View>
-      <View style={[styles.actions, !isMobile && styles.actionsColumn]}>
-        {manage && previous ? <Action icon="arrow-left" label={MESSAGES.tasks.back} onPress={() => onChangeStatus(task.id, previous)} /> : null}
-        {manage && next ? <Action icon="arrow-right" label={MESSAGES.tasks.advance} onPress={() => onChangeStatus(task.id, next)} /> : null}
-        {manage ? <Action icon="edit-2" label={MESSAGES.tasks.edit} onPress={() => onEdit(task)} /> : null}
-        {isOwner(user) ? <Action danger icon="trash-2" label={MESSAGES.tasks.remove} onPress={() => onRemove(task.id)} /> : null}
-      </View>
+      <TaskActions busy={busy} onChangeStatus={onChangeStatus} onEdit={onEdit} onRemove={onRemove} style={[styles.actions, !isMobile && styles.actionsColumn]} task={task} user={user} />
     </View>
   );
 }
@@ -67,19 +55,17 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     gap: theme.spacing.large,
     paddingHorizontal: theme.spacing.xlarge,
-    paddingVertical: theme.spacing.medium + 2,
+    paddingVertical: theme.spacing.row,
   },
   rowMobile: { alignItems: 'flex-start', flexDirection: 'column', gap: theme.spacing.small, paddingHorizontal: theme.spacing.large },
   main: { flex: 1, gap: 2, minWidth: 0, alignSelf: 'stretch' },
   title: { color: theme.colors.text, fontFamily: theme.typography.semibold, fontSize: theme.typography.body },
   description: { color: theme.colors.textSecondary, fontFamily: theme.typography.regular, fontSize: theme.typography.small },
   assignee: { alignItems: 'center', flexDirection: 'row', gap: theme.spacing.small },
-  assigneeColumn: { width: 150 },
+  assigneeColumn: { width: ASSIGNEE_COLUMN_WIDTH },
   due: { alignItems: 'center', flexDirection: 'row', gap: theme.spacing.xsmall },
-  dueColumn: { width: 140 },
+  dueColumn: { width: DUE_COLUMN_WIDTH },
   detail: { color: theme.colors.textSecondary, fontFamily: theme.typography.regular, fontSize: theme.typography.label },
-  actions: { alignItems: 'center', flexDirection: 'row', flexWrap: 'wrap', gap: theme.spacing.large },
-  actionsColumn: { flexWrap: 'nowrap', justifyContent: 'flex-end', width: 330 },
-  action: { alignItems: 'center', flexDirection: 'row', gap: theme.spacing.xsmall },
-  actionLabel: { fontFamily: theme.typography.semibold, fontSize: theme.typography.label },
+  actions: { alignItems: 'center' },
+  actionsColumn: { flexWrap: 'nowrap', justifyContent: 'flex-end', width: ACTIONS_COLUMN_WIDTH },
 });

@@ -1,6 +1,8 @@
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
 import { MESSAGES } from '../../../core/messages/messages';
 import { theme } from '../../../core/theme/theme';
+import { PageHeader } from '../../../core/ui/PageHeader';
+import { QueryStatus } from '../../../core/ui/LoadError';
 import { STATUS_META } from '../../tarefas/model/statusMeta';
 import { STATUS_ORDER } from '../../tarefas/model/taskRules';
 import type { StatusCounts } from '../api/dashboardApi';
@@ -29,22 +31,17 @@ function Section({ title, counts }: { title: string; counts: StatusCounts }) {
 }
 
 export function DashboardScreen() {
-  const { data, isError, refetch } = useDashboard();
+  const { data, error, isError, refetch } = useDashboard();
   return (
     <View style={styles.page}>
-      <View style={styles.heading}>
-        <Text accessibilityRole="header" style={styles.title}>{MESSAGES.dashboard.title}</Text>
-        <Text style={styles.subtitle}>{MESSAGES.dashboard.subtitle}</Text>
-      </View>
-      {isError ? (
-        <View style={styles.section}>
-          <Text style={styles.message}>{MESSAGES.dashboard.error}</Text>
-          <Pressable accessibilityRole="button" onPress={() => refetch()}>
-            <Text style={styles.retry}>{MESSAGES.dashboard.retry}</Text>
-          </Pressable>
-        </View>
-      ) : null}
-      {!isError && !data ? <Text style={styles.message}>{MESSAGES.common.loading}</Text> : null}
+      <PageHeader subtitle={MESSAGES.dashboard.subtitle} title={MESSAGES.dashboard.title} />
+      <QueryStatus
+        data={data}
+        error={error}
+        fallback={MESSAGES.dashboard.error}
+        isError={isError}
+        onRetry={() => void refetch()}
+      />
       {data ? (
         <>
           <Section counts={data.equipe} title={MESSAGES.dashboard.team} />
@@ -57,12 +54,7 @@ export function DashboardScreen() {
 
 const styles = StyleSheet.create({
   page: { gap: theme.spacing.xlarge },
-  heading: { gap: theme.spacing.xsmall },
-  subtitle: { color: theme.colors.textSecondary, fontFamily: theme.typography.regular, fontSize: theme.typography.body },
-  title: { color: theme.colors.text, fontFamily: theme.typography.bold, fontSize: theme.typography.pageHeading },
   section: { gap: theme.spacing.large },
-  sectionTitle: { color: theme.colors.text, fontFamily: theme.typography.bold, fontSize: theme.typography.body + 2 },
+  sectionTitle: { color: theme.colors.text, fontFamily: theme.typography.bold, fontSize: theme.typography.sectionTitle },
   cards: { flexDirection: 'row', flexWrap: 'wrap', gap: theme.spacing.large },
-  message: { color: theme.colors.textSecondary, fontFamily: theme.typography.regular },
-  retry: { color: theme.colors.primary, fontFamily: theme.typography.semibold },
 });

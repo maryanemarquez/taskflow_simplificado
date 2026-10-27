@@ -1,4 +1,4 @@
-import { Protected } from '../src/core/ui/Protected';
+import { Protected } from '../src/features/shell/ui/Protected';
 import { TasksScreen } from '../src/features/tarefas/ui/TasksScreen';
 
 export default function TasksRoute() {

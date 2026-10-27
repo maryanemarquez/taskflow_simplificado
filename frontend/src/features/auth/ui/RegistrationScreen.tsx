@@ -1,14 +1,14 @@
 import { StyleSheet, Text, View } from 'react-native';
-import { router } from 'expo-router';
+import { FIELD_LIMITS } from '../../../core/api/apiContract';
 import { MESSAGES } from '../../../core/messages/messages';
+import { ROUTES } from '../../../core/routes';
 import { theme } from '../../../core/theme/theme';
 import { useRegistration } from '../model/useRegistration';
 import { AccountTypeField } from './AccountTypeField';
-import { AuthField } from './AuthField';
+import { FormField } from '../../../core/ui/FormField';
 import { AuthLayout } from './AuthLayout';
-import { ErrorNotice } from './ErrorNotice';
-import { LinkButton } from './LinkButton';
-import { PrimaryButton } from './PrimaryButton';
+import { ErrorNotice } from '../../../core/ui/ErrorNotice';
+import { PrimaryButton } from '../../../core/ui/PrimaryButton';
 
 export function RegistrationScreen() {
   const registration = useRegistration();
@@ -18,34 +18,42 @@ export function RegistrationScreen() {
       icon="user-plus"
       subtitle={MESSAGES.registration.subtitle}
       title={MESSAGES.registration.title}
-      topLink={{ prompt: MESSAGES.registration.hasAccount, label: MESSAGES.registration.signIn, route: '/login' }}
+      topLink={{ prompt: MESSAGES.registration.hasAccount, label: MESSAGES.registration.signIn, route: ROUTES.login }}
     >
       <View style={styles.form}>
         <AccountTypeField error={errors.tipo} onChange={registration.updateType} value={form.tipo} />
-        <AuthField
+        <FormField
           field={{
             label: MESSAGES.registration.name,
             value: form.nome,
             error: errors.nome,
             autoCapitalize: 'words',
+            autoComplete: 'name',
+            textContentType: 'name',
+            maxLength: FIELD_LIMITS.nome,
             onChangeText: (value) => updateField('nome', value),
           }}
         />
-        <AuthField
+        <FormField
           field={{
             label: MESSAGES.registration.email,
             value: form.email,
             error: errors.email,
             keyboardType: 'email-address',
+            autoComplete: 'email',
+            textContentType: 'emailAddress',
+            maxLength: FIELD_LIMITS.email,
             onChangeText: (value) => updateField('email', value),
           }}
         />
-        <AuthField
+        <FormField
           field={{
             label: MESSAGES.registration.password,
             value: form.senha,
             error: errors.senha,
             secureTextEntry: true,
+            autoComplete: 'new-password',
+            textContentType: 'newPassword',
             onChangeText: (value) => updateField('senha', value),
           }}
         />
@@ -58,7 +66,6 @@ export function RegistrationScreen() {
           loading={registration.isSubmitting}
           onPress={registration.submit}
         />
-        <LinkButton label={MESSAGES.registration.haveAccount} onPress={() => router.replace('/login')} />
       </View>
     </AuthLayout>
   );
