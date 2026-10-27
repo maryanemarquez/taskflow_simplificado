@@ -1,4 +1,3 @@
-import React from 'react';
 import { act, fireEvent, renderHook, screen, waitFor } from '@testing-library/react-native';
 import { AppShell } from '../src/features/shell/ui/AppShell';
 import { tarefasApi, type Task } from '../src/features/tarefas/api/tarefasApi';

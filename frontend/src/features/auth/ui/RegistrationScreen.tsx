@@ -1,4 +1,5 @@
 import { StyleSheet, Text, View } from 'react-native';
+import { FIELD_LIMITS } from '../../../core/api/apiContract';
 import { MESSAGES } from '../../../core/messages/messages';
 import { ROUTES } from '../../../core/routes';
 import { theme } from '../../../core/theme/theme';
@@ -27,6 +28,9 @@ export function RegistrationScreen() {
             value: form.nome,
             error: errors.nome,
             autoCapitalize: 'words',
+            autoComplete: 'name',
+            textContentType: 'name',
+            maxLength: FIELD_LIMITS.nome,
             onChangeText: (value) => updateField('nome', value),
           }}
         />
@@ -36,6 +40,9 @@ export function RegistrationScreen() {
             value: form.email,
             error: errors.email,
             keyboardType: 'email-address',
+            autoComplete: 'email',
+            textContentType: 'emailAddress',
+            maxLength: FIELD_LIMITS.email,
             onChangeText: (value) => updateField('email', value),
           }}
         />
@@ -45,6 +52,8 @@ export function RegistrationScreen() {
             value: form.senha,
             error: errors.senha,
             secureTextEntry: true,
+            autoComplete: 'new-password',
+            textContentType: 'newPassword',
             onChangeText: (value) => updateField('senha', value),
           }}
         />

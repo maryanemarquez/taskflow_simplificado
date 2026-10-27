@@ -10,6 +10,11 @@ export interface FormFieldDefinition {
   secureTextEntry?: boolean;
   keyboardType?: TextInputProps['keyboardType'];
   autoCapitalize?: TextInputProps['autoCapitalize'];
+  /** Limite de caracteres do campo; o backend rejeita acima disso. */
+  maxLength?: number;
+  /** Dicas para o gerenciador de senhas e o autopreenchimento do navegador e do celular. */
+  autoComplete?: TextInputProps['autoComplete'];
+  textContentType?: TextInputProps['textContentType'];
 }
 
 interface FormFieldProps {
@@ -23,11 +28,14 @@ export function FormField({ field }: FormFieldProps) {
       <TextInput
         accessibilityLabel={field.label}
         autoCapitalize={field.autoCapitalize ?? 'none'}
+        autoComplete={field.autoComplete}
         autoCorrect={false}
         keyboardType={field.keyboardType}
+        maxLength={field.maxLength}
         onChangeText={field.onChangeText}
         secureTextEntry={field.secureTextEntry}
         style={formStyles.input}
+        textContentType={field.textContentType}
         value={field.value}
       />
       {field.error ? <Text accessibilityRole="alert" style={formStyles.error}>{field.error}</Text> : null}

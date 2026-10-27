@@ -1,4 +1,3 @@
-import React from 'react';
 import { fireEvent, screen, waitFor } from '@testing-library/react-native';
 import { router } from 'expo-router';
 import { ApiRequestError } from '../src/core/api/httpErrors';

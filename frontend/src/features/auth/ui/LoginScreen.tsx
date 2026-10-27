@@ -1,4 +1,5 @@
 import { StyleSheet, View } from 'react-native';
+import { FIELD_LIMITS } from '../../../core/api/apiContract';
 import { MESSAGES } from '../../../core/messages/messages';
 import { ROUTES } from '../../../core/routes';
 import { theme } from '../../../core/theme/theme';
@@ -26,6 +27,9 @@ export function LoginScreen() {
             label: MESSAGES.registration.email,
             value: login.form.email,
             keyboardType: 'email-address',
+            autoComplete: 'email',
+            textContentType: 'emailAddress',
+            maxLength: FIELD_LIMITS.email,
             onChangeText: (value) => login.updateField('email', value),
           }}
         />
@@ -34,6 +38,8 @@ export function LoginScreen() {
             label: MESSAGES.registration.password,
             value: login.form.senha,
             secureTextEntry: true,
+            autoComplete: 'current-password',
+            textContentType: 'password',
             onChangeText: (value) => login.updateField('senha', value),
           }}
         />

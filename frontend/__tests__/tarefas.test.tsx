@@ -1,4 +1,3 @@
-import React from 'react';
 import { fireEvent, screen, waitFor } from '@testing-library/react-native';
 import { ApiRequestError } from '../src/core/api/httpErrors';
 import { membrosApi } from '../src/features/membros/api/membrosApi';
@@ -91,6 +90,40 @@ it('HIST-001-tarefa/C02 - Dono escolhe o responsável ao criar', async () => {
   fireEvent.press(screen.getByRole('button', { name: 'Salvar' }));
 
   await waitFor(() => expect(tarefasApi.create).toHaveBeenCalledWith(expect.objectContaining({ responsavelId: 2 })));
+});
+
+it('HIST-001-tarefa/N1 - o Dono já vem escolhido como responsável de uma tarefa nova', async () => {
+  jest.mocked(tarefasApi.create).mockResolvedValue(TASKS[0]);
+  renderWithClient(<TasksScreen user={OWNER} />);
+  await screen.findByText('Do dono');
+
+  fireEvent.press(screen.getByRole('button', { name: 'Nova tarefa' }));
+  const dono = await screen.findByRole('button', { name: 'Dono', selected: true });
+  expect(dono).toBeTruthy();
+  fireEvent.changeText(screen.getByLabelText('Título'), 'Sem escolher');
+  fireEvent.press(screen.getByRole('button', { name: 'Salvar' }));
+
+  await waitFor(() => expect(tarefasApi.create).toHaveBeenCalledWith(expect.objectContaining({ responsavelId: 1 })));
+});
+
+it('HIST-001-tarefa/N1 - editar mantém o responsável da tarefa, sem trocar pelo Dono', async () => {
+  jest.mocked(tarefasApi.update).mockResolvedValue(TASKS[1]);
+  renderWithClient(<TasksScreen user={OWNER} />);
+  await screen.findByText('Da Bia');
+
+  fireEvent.press(screen.getAllByRole('button', { name: 'Editar' })[1]);
+  fireEvent.press(screen.getByRole('button', { name: 'Salvar' }));
+
+  await waitFor(() => expect(tarefasApi.update).toHaveBeenCalledWith(2, expect.objectContaining({ responsavelId: 2 })));
+});
+
+it('HIST-001-tarefa/C07 - título e descrição seguem os limites do backend', async () => {
+  renderWithClient(<TasksScreen user={OWNER} />);
+  await screen.findByText('Do dono');
+
+  fireEvent.press(screen.getByRole('button', { name: 'Nova tarefa' }));
+  expect(screen.getByLabelText('Título').props.maxLength).toBe(150);
+  expect(screen.getByLabelText('Descrição').props.maxLength).toBe(2000);
 });
 
 it('HIST-001-tarefa/C06 - título vazio não é enviado', async () => {

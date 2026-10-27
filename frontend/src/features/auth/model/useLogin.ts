@@ -16,7 +16,7 @@ export function useLogin() {
     mutationFn: (input: LoginPayload) => authApi.login(input),
     onSuccess: (response) => {
       queryClient.clear();
-      session.setToken(response.accessToken);
+      session.setToken(response.accessToken, response.accessTokenExpiraEm);
       router.replace(ROUTES.home);
     },
   });

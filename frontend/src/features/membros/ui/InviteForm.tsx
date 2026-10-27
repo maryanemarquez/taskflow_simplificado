@@ -1,4 +1,5 @@
 import { StyleSheet, Text, TextInput, View } from 'react-native';
+import { FIELD_LIMITS } from '../../../core/api/apiContract';
 import { MESSAGES } from '../../../core/messages/messages';
 import { theme } from '../../../core/theme/theme';
 import { ErrorNotice } from '../../../core/ui/ErrorNotice';
@@ -30,7 +31,9 @@ export function InviteForm({ email, onEmailChange, onAdd, adding, message, isMob
         <TextInput
           accessibilityLabel={MESSAGES.members.email}
           autoCapitalize="none"
+          autoComplete="off"
           keyboardType="email-address"
+          maxLength={FIELD_LIMITS.email}
           onChangeText={onEmailChange}
           placeholder={MESSAGES.members.emailPlaceholder}
           style={[formStyles.input, styles.input]}

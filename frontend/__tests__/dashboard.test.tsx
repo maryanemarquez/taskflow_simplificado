@@ -1,4 +1,3 @@
-import React from 'react';
 import { fireEvent, screen, waitFor } from '@testing-library/react-native';
 import { dashboardApi, type Dashboard } from '../src/features/dashboard/api/dashboardApi';
 import { DashboardScreen } from '../src/features/dashboard/ui/DashboardScreen';

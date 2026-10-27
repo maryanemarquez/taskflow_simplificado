@@ -1,13 +1,16 @@
 import { useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { FIELD_LIMITS } from '../../../core/api/apiContract';
 import { MESSAGES } from '../../../core/messages/messages';
 import { theme } from '../../../core/theme/theme';
 import { formStyles } from '../../../core/ui/formStyles';
 import { FormField } from '../../../core/ui/FormField';
 import { ErrorNotice } from '../../../core/ui/ErrorNotice';
 import { PrimaryButton } from '../../../core/ui/PrimaryButton';
+import { isOwnerRole } from '../../auth/model/roles';
 import type { Member } from '../../membros/api/membrosApi';
 import type { Task, TaskInput } from '../api/tarefasApi';
+import { validateTask, type TaskErrors } from '../model/taskValidation';
 import { DatePickerField } from './DatePickerField';
 
 const SAVE_BUTTON_MIN_WIDTH = 140;
@@ -29,15 +32,17 @@ export function TaskForm({ task, members, message, fieldErrors = {}, submitting 
   const [title, setTitle] = useState(task?.titulo ?? '');
   const [description, setDescription] = useState(task?.descricao ?? '');
   const [dueDate, setDueDate] = useState<string | null>(task?.prazo ?? null);
-  const [assigneeId, setAssigneeId] = useState<number | null>(task?.responsavel.id ?? null);
-  const [error, setError] = useState<string | null>(null);
+  const [pickedAssigneeId, setAssigneeId] = useState<number | null>(task?.responsavel.id ?? null);
+  const [errors, setErrors] = useState<TaskErrors>({});
+  // Tarefa nova: o Dono já vem escolhido como responsável, e ele troca se quiser.
+  const assigneeId = pickedAssigneeId ?? (task ? null : (members?.find((member) => isOwnerRole(member.papel))?.id ?? null));
 
   const submit = () => {
-    if (!title.trim()) {
-      setError(MESSAGES.tasks.titleRequired);
+    const found = validateTask({ titulo: title, descricao: description });
+    setErrors(found);
+    if (found.titulo || found.descricao) {
       return;
     }
-    setError(null);
     onSubmit({
       titulo: title.trim(),
       descricao: description.trim() || null,
@@ -46,10 +51,37 @@ export function TaskForm({ task, members, message, fieldErrors = {}, submitting 
     });
   };
 
+  const changeTitle = (value: string) => {
+    setTitle(value);
+    setErrors((current) => ({ ...current, titulo: undefined }));
+  };
+  const changeDescription = (value: string) => {
+    setDescription(value);
+    setErrors((current) => ({ ...current, descricao: undefined }));
+  };
+
   return (
     <View style={styles.form}>
-      <FormField field={{ label: MESSAGES.tasks.taskTitle, value: title, onChangeText: setTitle, error: fieldErrors.titulo, autoCapitalize: 'sentences' }} />
-      <FormField field={{ label: MESSAGES.tasks.description, value: description, onChangeText: setDescription, error: fieldErrors.descricao, autoCapitalize: 'sentences' }} />
+      <FormField
+        field={{
+          label: MESSAGES.tasks.taskTitle,
+          value: title,
+          onChangeText: changeTitle,
+          error: errors.titulo ?? fieldErrors.titulo,
+          autoCapitalize: 'sentences',
+          maxLength: FIELD_LIMITS.titulo,
+        }}
+      />
+      <FormField
+        field={{
+          label: MESSAGES.tasks.description,
+          value: description,
+          onChangeText: changeDescription,
+          error: errors.descricao ?? fieldErrors.descricao,
+          autoCapitalize: 'sentences',
+          maxLength: FIELD_LIMITS.descricao,
+        }}
+      />
       <DatePickerField error={fieldErrors.prazo} onChange={setDueDate} originalValue={task?.prazo ?? null} value={dueDate} />
       {members ? (
         <View style={styles.assigneeField}>
@@ -70,7 +102,7 @@ export function TaskForm({ task, members, message, fieldErrors = {}, submitting 
           {fieldErrors.responsavelId ? <Text accessibilityRole="alert" style={formStyles.error}>{fieldErrors.responsavelId}</Text> : null}
         </View>
       ) : null}
-      {error || message ? <ErrorNotice message={error ?? message ?? ''} /> : null}
+      {message ? <ErrorNotice message={message} /> : null}
       <View style={styles.buttons}>
         <Pressable
           accessibilityRole="button"

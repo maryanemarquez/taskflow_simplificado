@@ -1,4 +1,3 @@
-import React from 'react';
 import { act, screen } from '@testing-library/react-native';
 import { applyErrorPolicy } from '../src/core/api/errorPolicy';
 import { ApiRequestError } from '../src/core/api/httpErrors';

@@ -1,7 +1,11 @@
+import { FIELD_LIMITS } from '../api/apiContract';
+
 const EMAIL_REQUIRED = 'Informe o e-mail.';
 const EMAIL_INVALID = 'Informe um e-mail válido.';
-const EMAIL_TOO_LONG = 'Use no máximo 150 caracteres.';
+const EMAIL_TOO_LONG = `Use no máximo ${FIELD_LIMITS.email} caracteres.`;
 const TITLE_REQUIRED = 'Informe o título.';
+const TITLE_TOO_LONG = `O título pode ter no máximo ${FIELD_LIMITS.titulo} caracteres.`;
+const DESCRIPTION_TOO_LONG = `A descrição pode ter no máximo ${FIELD_LIMITS.descricao} caracteres.`;
 const TYPE_REQUIRED = 'Escolha o tipo de conta.';
 const INVALID_DUE_DATE = 'Prazo inválido. Use uma data real no formato DD/MM/AAAA.';
 
@@ -51,7 +55,7 @@ export const MESSAGES = {
     passwordHint: 'Use ao menos 8 caracteres, com uma letra e um número.',
     required: 'Este campo é obrigatório.',
     invalidEmail: EMAIL_INVALID,
-    nameTooLong: 'Use no máximo 100 caracteres.',
+    nameTooLong: `Use no máximo ${FIELD_LIMITS.nome} caracteres.`,
     emailTooLong: EMAIL_TOO_LONG,
     passwordTooLong: 'A senha é muito longa.',
     passwordPolicy: 'A senha precisa ter ao menos 8 caracteres, com letra e número.',
@@ -108,6 +112,8 @@ export const MESSAGES = {
     back: 'Voltar',
     dueOn: (date: string) => `Prazo: ${date}`,
     titleRequired: TITLE_REQUIRED,
+    titleTooLong: TITLE_TOO_LONG,
+    descriptionTooLong: DESCRIPTION_TOO_LONG,
     status: {
       PENDENTE: 'Pendente',
       EM_ANDAMENTO: 'Em andamento',
@@ -136,8 +142,8 @@ export const MESSAGES = {
     'email.OBRIGATORIO': EMAIL_REQUIRED,
     'email.TAMANHO_EXCEDIDO': EMAIL_TOO_LONG,
     'titulo.OBRIGATORIO': TITLE_REQUIRED,
-    'titulo.TAMANHO_EXCEDIDO': 'O título pode ter no máximo 150 caracteres.',
-    'descricao.TAMANHO_EXCEDIDO': 'A descrição pode ter no máximo 2000 caracteres.',
+    'titulo.TAMANHO_EXCEDIDO': TITLE_TOO_LONG,
+    'descricao.TAMANHO_EXCEDIDO': DESCRIPTION_TOO_LONG,
     'responsavelId.INVALIDO': 'Escolha um responsável da sua equipe.',
   } as Record<string, string>,
   members: {

@@ -1,4 +1,3 @@
-import React from 'react';
 import { Text } from 'react-native';
 import { fireEvent, screen, waitFor } from '@testing-library/react-native';
 import { router } from 'expo-router';

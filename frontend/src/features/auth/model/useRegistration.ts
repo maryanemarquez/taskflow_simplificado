@@ -36,7 +36,7 @@ export function useRegistration() {
     mutationFn: (input: RegistrationPayload) => authApi.register(input),
     onSuccess: (response) => {
       queryClient.clear();
-      session.setToken(response.accessToken);
+      session.setToken(response.accessToken, response.accessTokenExpiraEm);
       router.replace(ROUTES.home);
     },
     onError: (error) => {

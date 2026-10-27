@@ -1,4 +1,3 @@
-import React from 'react';
 import { fireEvent, screen, waitFor } from '@testing-library/react-native';
 import { ApiRequestError, NetworkRequestError } from '../src/core/api/httpErrors';
 import { membrosApi } from '../src/features/membros/api/membrosApi';

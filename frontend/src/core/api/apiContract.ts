@@ -42,6 +42,15 @@ export interface ApiProblem {
   erros?: ApiFieldError[];
 }
 
+/** Limites de tamanho dos campos, iguais aos do backend (nome, e-mail e título em caracteres; senha em bytes). */
+export const FIELD_LIMITS = {
+  nome: 100,
+  email: 150,
+  titulo: 150,
+  descricao: 2000,
+  senhaBytes: 72,
+} as const;
+
 const SERVER_ERROR_STATUS = 500;
 
 /** Status HTTP de falha do servidor (500 ou mais). */

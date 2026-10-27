@@ -1,4 +1,3 @@
-import React from 'react';
 import { fireEvent, screen, waitFor } from '@testing-library/react-native';
 import { router } from 'expo-router';
 import { ApiRequestError, NetworkRequestError } from '../src/core/api/httpErrors';
@@ -13,7 +12,7 @@ jest.mock('../src/features/auth/api/authApi', () => ({
   authApi: { register: jest.fn(), login: jest.fn(), currentUser: jest.fn() },
 }));
 
-const SESSION = { tipo: 'Bearer', accessToken: 'token-teste', accessTokenExpiraEm: '2026-10-20T20:15:00Z' };
+const SESSION = { tipo: 'Bearer', accessToken: 'token-teste', accessTokenExpiraEm: new Date(Date.now() + 8 * 3_600_000).toISOString() };
 
 const fillRegistration = (password: string, type: 'Dono' | 'Membro' | null = 'Dono') => {
   if (type) {
